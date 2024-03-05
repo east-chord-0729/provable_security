@@ -1,0 +1,272 @@
+\section{Defining Computationally Secure Encryption}
+
+먼저 개인 키 암호화의 가장 기본적인 개념인 암호문 전용 공격(Ciphertext-Only Attack, COA)에 대한 보안을 제시합니다. COA에 대한 보안은 공격자가 단 하나의 암호문만 관찰하는 경우에 대한 보안입니다. 더 강력한 보안 정의는 나중에 고려합니다. 보안 정의의 아이디어는 공격자가 암호문으로부터 평문에 대한 어떤 부분적인 정보도 배울 수 없다는 것입니다. semantic-secure의 정의는 이 개념을 정확히 공식화한 것으로, 계산상 안전한 암호화의 첫 번째 정의가 제안되었습니다. semantic-secure은 복잡하고 작업하기가 어렵습니다. 다행히 indistinguishability(또는 EAV-secure)라는 동일한 정의가 있으며, 이는 훨씬 더 간단합니다.
+
+\subsection*{The Basic Definition of Security (EAV-Security)}
+
+개인 키 암호 체계 $\sch$와 공격자 $\adv$에 대해 실험 $\expeav{\adv, \sch}(n)$을 구성하고, EAV-secure를 정의합니다.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[>=latex]
+        % adv box
+        \node[draw, minimum width=5.5cm, minimum height=6.5cm] (adv) {};
+        \node[above] at (adv.north) {$\adv(1^n)$};
+
+        % adversary
+        \node (gen_m) at ([yshift=1.5cm]adv) {choose $m_0, m_1 \in \binset{*}$};
+        \node  at ([yshift=-0.5cm]gen_m) {s.t. $m_0 \neq m_1$ and $|m_0| = |m_1|$};
+
+        % challenger
+        \node (get_m) at ([xshift=-5.0cm]gen_m) {$m_0, m_1$};
+        \node (gen_k) at ([yshift=1.0cm]get_m) {$k \samp \gen(1^n)$};
+        \node (b) at ([yshift=-1.0cm]get_m) {$b \unisamp \binset{}$};
+        \node (enc) at ([yshift=-1.0cm]b) {$c \samp \enc(m_b)$};
+
+        \node (get_c) at ([xshift=5.0cm]enc) {$c$};
+        \node (gen_bp) at ([yshift=-1.0cm]get_c) {answer $b' \in \binset{}$};
+
+        \node (get_bp) at ([xshift=-5.0cm]gen_bp) {$b'$};
+        \node (ret) at ([yshift=-1.0cm]get_bp) {return $b \issame b'$};
+
+        % send
+        \draw[<-] (get_m) --+ (gen_m);
+        \draw[->] (enc) --+ (get_c);
+        \draw[<-] (get_bp) --+ (gen_bp);
+    \end{tikzpicture}
+    \caption{indistinguishability experiment of private-key encryption scheme}
+    \label{fig:prieav}
+\end{figure}
+
+\begin{definition} \label{def:eav1}
+    A private-key encryption scheme $\sch$ has \emph{indistinguishable encryptions in the presence of an eavesdropper}, or is \emph{EAV-secure}, if for all ppt distinguisher $\adv$ there is a negligible function $\negl$ such that
+    \begin{equation}
+        \pr{\expeav{\adv, \sch}(n) = 1} \le \frac{1}{2} + \negl(n).
+    \end{equation}
+    The probability above is taken over the randomness used by $\adv$ and the randomness used in the experiment (for choosing the key and the bit $b$, as well as any randomness used by $\enc$).
+\end{definition}
+
+\begin{definition} \label{def:eav2}
+    A private-key encryption scheme $\sch$ has \emph{indistinguishable encryptions in the presence of an eavesdropper}, or is \emph{EAV-secure}, if for all ppt distinguisher $\adv$ there is a negligible function $\negl$ such that
+    \begin{equation}
+        \abs{
+            \pr{\adv(1^n) = 1 \when b = 0} - \pr{\adv(1^n) = 1 \when b = 1}
+        } \le \negl(n).
+    \end{equation}
+\end{definition}
+
+이 두 정의는 서로 동치이며, 증명과정에서는 아래를 주로 사용합니다. 이 동치관계는 앞으로 이야기할 보안의 정의에서도 사용하며, 그 때 증명은 생략합니다.
+
+\begin{proposition}
+    The definition \ref{def:eav2} is equivalent to  definition \ref{def:eav1}.
+    \label{pro:same_def}
+\end{proposition}
+
+\begin{proof}
+    \begin{equation}
+        \begin{split}
+            \pr{\expeav{\adv, \sch}(n) = 1}
+            &= \abs{\pr{b = 1} \cdot \pr{\adv(1^n) = 1 \when b = 1} + \pr{b = 0} \cdot \pr{\adv(1^n) = 0 \when b = 0}} \\
+            &= \abs{\frac{1}{2} \cdot \pr{\adv(1^n) = 1 \when b = 1} + \frac{1}{2} \cdot \pr{\adv(1^n) = 0 \when b = 0}} \\
+            &= \abs{\frac{1}{2} \cdot \pr{\adv(1^n) = 1 \when b = 1} + \frac{1}{2} \cdot \brk{ 1 - \pr{\adv(1^n) = 1 \when b = 0} }} \\
+            &= \frac{1}{2} + \frac{1}{2} \cdot \abs{\brk{ \pr{\adv(1^n) = 1 \when b = 0} - \pr{\adv(1^n) = 1 \when b = 1} }} \\
+            &\le \frac{1}{2} + \negl(n).
+        \end{split}
+    \end{equation}
+\end{proof}
+
+\newpage
+\subsection*{Semantic Security}
+
+개인 키 암호 체계 $\sch$와 공격자 $\adv$에 대해 실험 $\prisem{\adv}{b}$을 구성하고, semantic-secure를 정의합니다.
+
+\begin{figure}[h]
+    \centering
+    \begin{tikzpicture}[>=latex]
+        % adv box
+        \node[draw, minimum width=3.5cm, minimum height=7.5cm] (adv) {};
+        \node[above] at (adv.north) {$\adv(1^n)$};
+
+        % adversary
+        \node (gen_s) at ([yshift=2.5cm]adv) {choose $\sampalg$};
+        \node (gen_fy) at ([yshift=-1.5cm]get_c) {answer $f$ and $y$};
+
+        % challenger
+        \node (get_s) at ([xshift=-5.0cm]gen_s) {$\sampalg$};
+        \node (get_m) at ([yshift=-0.5cm]get_s) {$m, m' \samp \sampalg$};
+
+        \node (b) at ([yshift=-1.0cm]get_m) {$b \unisamp \binset{}$};
+
+        \node (gen_k) at ([yshift=1.0cm]get_s) {$k \samp \gen(1^n)$};
+        \node (enc1) at ([yshift=-1.0cm]b) {if $b = 1$, $c \samp \enc(m)$};
+        \node (enc2) at ([yshift=-0.5cm]enc1) {if $b = 0$, $c \samp \enc(m')$};
+
+        \node (get_c) at ([xshift=5.0cm]enc1) {$c, h(m)$};
+
+        \node (get_fy) at ([xshift=-5.0cm]gen_fy) {$f, y$};
+        \node (ret) at ([yshift=-1.0cm]get_fy) {return $f(m) \issame y$};
+
+        % send
+        \draw[<-] (get_s) --+ (gen_s);
+        \draw[->] (enc1) --+ (get_c);
+        \draw[<-] (get_fy) --+ (gen_fy);
+    \end{tikzpicture}
+    \caption{semantic security experiment of private-key encryption scheme}
+    \label{fig:prisem}
+\end{figure}
+
+\begin{definition}
+    A private-key encryption scheme $\sch$ is \emph{semantically secure in the presence of an eavesdropper} if for all ppt adversaries $\adv$ there is a negligible function $\negl$ such that
+    \begin{equation}
+        \abs{
+            \pr{\expsem{\adv, \sch}(n) = 1 \when b = 0} - \pr{\expsem{\adv, \sch}(n) = 1 \when b = 1}
+        } \le \negl(n).
+    \end{equation}
+\end{definition}
+
+\begin{theorem}
+    A private-key encryption scheme is EAV-secure if and only if it is semantically secure in the presence of an eavesdropper.
+\end{theorem}
+
+\begin{proof}
+    ($\rif$) $\sch$가 semantic-secure하지 않다고 가정합니다. 그러면 어떤 negligible 함수 $\negl$에 대해 아래의 식을 만족하는 공격자 $\adv'$가 존재합니다.
+    \begin{equation}
+        \abs{
+            \pr{\expsem{\adv', \sch}(n) = 1 \when b = 0} - \pr{\expsem{\adv', \sch}(n) = 1 \when b = 1}
+        } > \negl(n).
+    \end{equation}
+
+    다음과 같이 실험 $\expeav{\adv, \sch}(n)$을 진행하는 구분자 $\adv$를 가정합니다.
+
+    \begin{figure}[h]
+        \centering
+        \begin{tikzpicture}[>=latex]
+            % eav adv box
+            \node[draw, inner sep=2.5cm] (adv) {};
+            \node[above] (adv_name) at (adv.north) {$\adv(1^n)$ in EAV experiment};
+
+            % sem adv box
+            \node[draw, inner sep=2.0cm] (adv2) at (5, 0.5) {};
+            \node[above] (adv_name) at (adv2.north) {$\adv'(1^n)$ in SEM experiment};
+
+            % challenger
+            \node (gen) at (-5, 2.25) {$k \samp \gen$};
+            \node (m0m1) at (-5, 1.25) {$m_0, m_1$};
+            \node (b) at (-5, 0.75) {$b \unisamp \binset{}$};
+            \node (enc) at (-5, 0.25) {$c \samp \enc(m_b)$};
+            \node (bp) at (-5, -1.25) {$b'$};
+            \node (ret) at (-5, -2.25) {return $b \issame b'$};
+
+            % adversary
+            \node[red] (getS) at (0, 1.75) {$\sampalg$};
+            \node[red] (get_m) at (0, 1.25) {$m_0, m_1 \samp \sampalg$};
+            \node (c) at (0, 0.25) {$c$};
+            \node[red] (get_fy) at (0, -0.75) {$f, y$};
+            \node[red] (atk) at (0, -1.25) {answer $b' := 1$ if $f(m_1) = y$};
+            \node[red] (atk_fail) at (0, -1.75) {answer $b':= 0$, otherwise};
+
+            %adversary'
+            \node (S) at (5, 1.75) {choose $\sampalg$};
+            \node (cc) at (5, 0.25) {$c, h(m_1)$};
+            \node (fy) at (5, -0.75) {answer $f$ and $y$};
+
+            % send
+            \draw[<-] (getS) --+ (S);
+            \draw[<-] (m0m1) --+ (get_m);
+            \draw[->] (enc) --+ (c);
+            \draw[->][red] (c) --+ (cc);
+            \draw[<-] (get_fy) --+ (fy);
+            \draw[<-] (bp) --+ (atk);
+        \end{tikzpicture}
+        \caption{EAV-secure experiment of $\adv$ with $\adv'$}
+        \label{fig:eavtosem}
+    \end{figure}
+
+    다음에 의해, $\sch$는 가정한 $\adv$에 대해 EAV-secure하지 않습니다.
+    \begin{equation}
+        \begin{split}
+            &\abs{
+                \pr{\adv(1^n) = 1 \when b = 0} - \pr{\adv(1^n) = 1 \when b = 1}
+            } \\
+            &= \abs{
+                \pr{f(m_1) = y \when b = 0} - \pr{f(m_1) = y \when b = 1}
+            } \\
+            &= \pr{\expsem{\adv', \sch}(n) = 1 \when b = 0} - \pr{\expsem{\adv', \sch}(n) = 1 \when b = 1} > \negl(n).
+        \end{split}
+    \end{equation}
+
+    ($\lif$) $\sch$가 EAV-secure하지 않다고 가정합니다. 그러면 어떤 negligible 함수 $\negl$에 대해 아래의 식을 만족하는 구분자 $\adv'$가 존재합니다.
+    \begin{equation}
+        \abs{
+            \pr{\adv'(1^n) = 1 \when b = 0} - \pr{\adv'(1^n) = 1 \when b = 1}
+        } > \negl(n).
+    \end{equation}
+
+    다음과 같이 실험 $\expsem{\adv, \sch}(n)$을 진행하는 공격자 $\adv$를 가정합니다.
+
+    \begin{figure}[h]
+        \centering
+        \begin{tikzpicture}[>=latex]
+            % sem adv box
+            \node[draw, inner sep=3.0cm] (adv) {};
+            \node[above] (adv_name) at (adv.north) {$\adv(1^n)$ in SEM experiment};
+
+            % eav adv box
+            \node[draw, inner sep=2.5cm] (adv2) at (6, 0.5) {};
+            \node[above] (adv_name) at (adv2.north) {$\adv'(1^n)$ in EAV experiment};
+
+            % challenger
+            \node (gen) at (-5, 3.0) {$k \samp \gen$};
+            \node (getS) at (-5, 1.5) {$\sampalg$};
+            \node (gen_m) at (-5, 1.0) {$m_0, m_1 \samp \sampalg$};
+            \node (b) at (-5, 0.5) {$b \unisamp \binset{}$};
+            \node (enc) at (-5, 0.0) {$c \samp \enc(m_b)$};
+            \node (get_fy) at (-5, -1.5) {$f, y$};
+            \node (ret) at (-5, -2.5) {return $y \issame f(m_1)$};
+
+            % adversary
+            \node[red] (get_m) at (0, 2.0) {$m_0, m_1$};
+            \node (chooseS) at (0, 1.5) {choose $\sampalg$};
+            \node[red] (chooseS2) at (0, 1.0) {s.t. $\sampalg$ outputs $m_0$ and $m_1$};
+            \node (get_ch) at (0, 0.0) {$c, h(m_1)$};
+            \node[red] (get_bp) at (0, -1.0) {$b'$};
+            \node (choose_fy) at (0, -1.5) {answer $f$ and $y$};
+            \node[red] at (0, -2.0) {s.t. $f(m_1) = y$ if $b' = 1$};
+            \node[red] at (0, -2.5) {$f(m_1) \neq y$, otherwise};
+
+            % adversary'
+            \node (choose_m) at (6, 2.0) {choose $m_0, m_1 \in \binset{*}$};
+            \node at (6, 1.5) {s.t. $m_0 \neq m_1$ and $|m_0| = |m_1|$};
+            \node (get_c) at (6, 0.0) {$c$};
+            \node (choose_bp) at (6, -1.0) {answer $b' \in \binset{}$};
+
+            % send
+            \draw[<-] (get_m) --+ (choose_m);
+            \draw[<-] (getS) --+ (chooseS);
+            \draw[->] (enc) --+ (get_ch);
+            \draw[->][red] (get_ch) --+ (get_c);
+            \draw[<-] (get_bp) --+ (choose_bp);
+            \draw[<-] (get_fy) --+ (choose_fy);
+        \end{tikzpicture}
+        \caption{semantic-secure experiment of $\adv$ with $\adv'$}
+        \label{fig:semtoeav}
+    \end{figure}
+
+    다음에 의해, $\sch$는 가정한 $\adv$에 대해 semantic-secure하지 않습니다.
+    \begin{equation}
+        \begin{split}
+            &\abs{
+                \pr{\expsem{\adv, \sch}(n) = 1 \when b = 0} - \pr{\expsem{\adv, \sch}(n) = 1 \when b = 1}
+            } \\
+            &= \abs{
+                \pr{f(m_1) = y \when b = 0} - \pr{f(m_1) = y \when b = 1}
+            } \\
+            &= \abs{
+                \pr{b' = 1 \when b = 0} - \pr{b' = 1 \when b = 1}
+            } \\
+            &= \abs{
+                \pr{\adv'(1^n) = 1 \when b = 0} - \pr{\adv'(1^n) = 1 \when b = 1}
+            } > \negl(n).
+        \end{split}
+    \end{equation}
+\end{proof}

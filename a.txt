@@ -1,0 +1,11 @@
+\begin{figure}[ht] \label{fig:exp_ind_cpa_cbc}
+    \centering
+    \begin{mdframed}[innertopmargin=\topskip]
+      \begin{tikzpicture}
+        [inner sep=0.5cm, every text node part/.style={align=center}]
+        
+      \end{tikzpicture}
+    \end{mdframed}
+    \caption{\textsf{IND-CPA} experiment of private-key encryption scheme with
+      CBC mode}
+  \end{figure}

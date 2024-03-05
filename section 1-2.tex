@@ -1,0 +1,354 @@
+\section{Stronger Security Notions}
+지금까지 우리는 상대가 정직한 당사자들 사이에 전송되는 하나의 암호문을 수동적으로만 도청하는 보안에 대한
+비교적 약한 정의를 고려해왔습니다. 여기서 우리는 더 강력한 보안 개념을 고려합니다.
+
+% \subsection*{Security for Multiple Encryptions}
+% 지금까지 우리는 통신 당사자들이 도청자가 관측한 하나의 암호문을 전송하는 경우를 다뤘습니다. 하지만 
+% 도청자가 모든 암호문을 관측할지라도 통신 당사자들이 서로 안전하게 여러 개의 암호문을 전송할 수 
+% 있다면 편리할 것입니다. 그런 응용 분야에서는 여러 메시지를 암호화하는 안전한 암호화 체계가 필요합니다. 
+% 먼저 이 설정에 대한 적절한 보안 정의부터 시작합니다. 정의 3.8의 경우와 마찬가지로 먼저 모든 암호화 체계 
+% $\sch$, 공격자 $\adv$ 및 보안 매개 변수 $n$에 대해 정의된 적절한 실험 
+% $\expmult{\adv, \sch}(n)$을 소개합니다:
+
+% \begin{figure}[h]
+%     \centering
+%     \begin{tikzpicture}[>=latex]
+
+%         \node[draw, minimum width=7.5cm, minimum height=7.0cm] (A) {};
+%         \node[above] (A_name) at (A.north) {$\adv(1^n)$};
+
+%         \node (key_gen) at ([xshift=-7.0cm, yshift=-1.0cm]A_name) {$k \samp \gen(1^n)$};
+
+%         \node (chs_m0m1) at ([yshift=-2.0cm]A_name) {choose $\vec{m}_0 = \veclist{m_{0,0}}{m_{0, t-1}}$};
+%         \node at ([yshift=-0.5cm]chs_m0m1) {and $\vec{m}_1 := \veclist{m_{1, 0}}{m_{1, t-1}}$};
+%         \node at ([yshift=-1.0cm]chs_m0m1) {s.t. $m_{0,i} \neq m_{1,i}$ and $|m_{0,i}| = |m_{1,i}|$ for all $i$};
+%         \node (get_m0m1) at ([xshift=-7.0cm]chs_m0m1) {$\vec{m}_0, \vec{m}_1$};
+%         \draw[<-] (get_m0m1) --+ (chs_m0m1);
+
+%         \node (choose_b) at ([yshift=-1.0cm]get_m0m1) {$b \unisamp \binset{}$};
+
+%         \node (enc) at ([yshift=-1.0cm]choose_b) {$c_i \samp \enc{k}(m_{b, i})$ for all $i$};
+
+%         \node (vec_c) at ([yshift=-0.5cm]enc) {$\vec{c} := \veclist{c_0}{c_{t-1}}$};
+%         \node (get_vec_c) at ([xshift=7.0cm]vec_c) {$\vec{c}$};
+%         \draw[->] (vec_c) --+ (get_vec_c);
+
+%         \node (chs_bp) at ([yshift=-1.0cm]get_vec_c) {answer $b' \in \binset{}$};
+%         \node (get_bp) at ([xshift=-7.0cm]chs_bp) {$b'$};
+%         \draw[<-] (get_bp) --+ (chs_bp);
+
+%         \node (return) at ([yshift=-1.0cm]get_bp) {return $b \issame b'$};
+%     \end{tikzpicture}
+%     \caption{Indistinguishability experiment of private-key encryption scheme with multiple encryption}
+%     \label{fig:exp_mult}
+% \end{figure}
+
+% \begin{definition}
+%     A private-key encryption scheme $\sch$ has \emph{indistinguishable multiple encryptions in the presence of an eavesdropper} if for all PPT distinguishers $\adv$ there is a negligible function $\negl$ such that
+%     \begin{equation}
+%         \pr{\expmult{\adv, \sch}(n) = 1} \le \frac{1}{2} + \negl(n).
+%     \end{equation}
+% \end{definition}
+
+% % \begin{proposition}
+% %     There is a private-key encryption scheme that has indistinguishable encryptions in the presence of an eavesdropper, but not indistinguishable multiple encryptions in the presence of an eavesdropper.
+% % \end{proposition}
+
+% % 확률적 암호화의 필요성 위의 내용은 정의 3.18이 어떠한 암호화 방식으로도 달성할 수 없음을 보여주는 것처럼 보일 수 있습니다. 이는 암호화 체계가 (상태 없음 2 및) 결정론적인 경우에만 해당하므로 동일한 키를 사용하여 동일한 메시지를 여러 번 암호화하면 항상 동일한 결과가 나타납니다. 이것은 정리로 진술하기에 충분히 중요합니다.
+
+% \begin{theorem}
+%     If $\sch$ is a encryption scheme in which $\enc{}$ is a deterministic function of the key and the message, then $\sch$ cannot have indistinguishable multiple encryptions in the presence of an eavesdropper.
+% \end{theorem}
+
+% \begin{proof}
+%     구분자 $\adv$가 다중 암호화 구분 불가능성 실험 $\ref{fig:exp_mult}$에서 두 개의 메시지 벡터 $\vec{m_0} = (m_0, m_0)$와 $\vec{m_1} = (m_0, m_1)$을 선택한다고 가정합니다. (이 때, $m_0 \neq m_1$.) $\adv$가 암호문 $(c_0, c_1)$을 받았을 때, 암호 체계가 결정론적이라면, $b = 0$일 경우 $\adv$는 $c_0 = c_1$인 암호문을 받게 되고, $b = 1$일 경우 $c_0 \neq c_1$인 암호문을 받게 됩니다. 즉 $\adv$는 $1$의 확률로 실험을 성공할 수 있습니다.
+% \end{proof}
+
+% 여러 메시지를 암호화하는 안전한 방식을 구성하려면 동일한 메시지를 여러 번 암호화할 때 서로 다른 암호문을 생성할 수 있도록 암호화를 무작위화하는 방식을 설계해야 합니다. 암호 해독이 항상 메시지를 복구할 수 있어야 하기 때문에 이것은 불가능해 보일 수 있습니다. 그러나 우리는 곧 그것을 달성하는 방법을 알게 될 것입니다.
+
+\subsection*{Chosen-Plaintext Attacks and CPA-Security}
+공식적인 정의에서 우리는 공격자 $\adv$가 선택한 메시지를 $\adv$가 알 수 없는 키 $\key$를 사용하여
+암호화하는 블랙박스로 간주되는 암호화 오라클에 대한 접근 권한을 $\adv$에게 부여하여
+COA를 모델링합니다. 즉, $\adv$가 암호화 $\enc_{\key}$에 접근할 수 있다고 상상합니다.
+$\adv$가 이 오라클에 메시지 $\pt$을 입력으로 제공하여 질의(query)하면, 오라클은 암호문
+$\enc_{\key}(\pt)$를 응답으로 반환합니다. $\adv$는 원하는 횟수만큼 암호화 오라클과 상호 작용할
+수 있습니다.
+
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}
+    [inner sep=0.5cm, every text node part/.style={align=center}]
+
+    % challenger C
+    \node at (-7, 3.5) (gen) {$k \samp \gen(1^n)$};
+    \node[blue] at (-7, 2.5) (r1) {response $c := \enc_k(m)$};
+    \node at (-7, 1.5) (get_m0m1) {$m_0, m_1$};
+    \node at (-7, 0.5) (b) {$b \unisamp \binset{}$};
+    \node at (-7, -0.5) (enc) {$c \samp \enc_k(m_b)$};
+    \node[blue] at (-7, -1.5) (r2) {response $c := \enc_k(m)$};
+    \node at (-7, -2.5) (get_bp) {$b'$};
+    \node at (-7, -3.5) (return) {return $b \issame b'$};
+
+    % adversary A
+    \node[draw, minimum width=5cm, minimum height=9cm] (adv) {};
+    \node[above, inner sep=0.5] at (adv.north) (adv_name) {$\adv(1^n)$};
+
+    \node[blue] at (0, 2.5) (q1) {query $m \in \binset{*}$};
+    \node at (0, 1.5) (chs_m0m1) {
+      choose $m_0, m_1 \in \binset{*}$ \\
+      s.t. $|m_0| = |m_1|$
+    };
+    \node at (0, -0.5) (get_c) {$c$};
+    \node[blue] at (0, -1.5) (q2) {query $m \in \binset{*}$};
+    \node at (0, -2.5) (chs_bp) {answer $b' \in \binset{}$};
+
+    % lines
+    \draw[blue, <->] (q1) --+ (r1);
+    \draw[<-] (get_m0m1) --+ (chs_m0m1);
+    \draw[->] (enc) --+ (get_c);
+    \draw[blue, <->] (q2) --+ (r2);
+    \draw[<-] (get_bp) --+ (chs_bp);
+  \end{tikzpicture}
+  \caption{CPA indistinguishability experiment of private-key encryption scheme}
+  \label{fig:exp_cpa}
+\end{figure}
+
+\begin{definition} \label{def:cpa}
+  A private-key encryption scheme $\sch$ has \emph{indistinguishable encryptions under a chosen-plaintext attack}, or is \emph{CPA-secure}, if for all PPT distinguishers $\adv$ there is a negligible function $\negl$ such that
+  \begin{equation}
+    \pr{\expcpa{\adv, \sch}(n) = 1} \le \frac{1}{2} + \negl(n).
+  \end{equation}
+  where the probability is taken over the randomness used by $\adv$, as well as the randomness used in the experiment.
+\end{definition}
+
+이 정의에서 사용한 부등식은 다음과 같이 바꿔서 사용할 수 있습니다. 증명은 EAV-secure에서 사용한 증명과 비슷하므로 생략합니다.
+\begin{equation}
+  \abs{
+    \pr{\adv(1^n) = 1 \when b = 0} - \pr{\adv(1^n) = 1 \when b = 1}
+  } \le \negl(n).
+\end{equation}
+
+CPA-secure는 오늘날 암호화 체계가 만족해야 할 보안의 최소한의 개념이지만, 더 강력한 보안 개념(CCA)을 요구하는 것이 점점 더 일반화되고 있습니다.
+
+\newpage
+\subsection*{CPA-Security for Multiple Encryptions}
+CPA-secure 정의는 다중 암호화의 경우로 확장할 수 있습니다. 여기서는 암호화할 평문 쌍을 선택할 수 있는 공격자를 모델링할 수 있는 다소 단순하고 장점이 있는 다른 접근 방식을 취합니다. 특히, 공격자에게 동일한 길이의 메시지 $m_0, m_1$을 입력하면 암호문 $\enc{k}(m_b)$를 계산하고 반환하는 좌우 오라클 $\orclr{k, b}$에 대한 액세스 권한을 부여합니다.
+
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}
+    [inner sep=0.5cm, every text node part/.style={align=center}]
+
+    % challenger C
+    \node at (-7, 3.5) (gen) {$k \samp \gen(1^n)$};
+    \node[blue] at (-7, 2.5) (r1) {response $\vec{\ct} := \enc_k(\vec{\pt})$};
+    \node at (-7, 1.5) (get_m0m1) {$\vec{\pt}_0, \vec{\pt}_1$};
+    \node at (-7, 0.5) (b) {$b \unisamp \binset{}$};
+    \node at (-7, -0.5) (enc) {$\vec{\ct} \samp \enc_k(\vec{\pt}_b)$};
+    \node[blue] at (-7, -1.5) (r2) {response $\vec{\ct} := \enc_k(\vec{\pt})$};
+    \node at (-7, -2.5) (get_bp) {$b'$};
+    \node at (-7, -3.5) (return) {return $b \issame b'$};
+
+    % adversary A
+    \node[draw, minimum width=5cm, minimum height=9cm] (adv) {};
+    \node[above, inner sep=0.5] at (adv.north) (adv_name) {$\adv(1^n)$};
+
+    \node[blue] at (0, 2.5) (q1) {query $\vec{\pt}$};
+    \node at (0, 1.5) (chs_m0m1) {
+      choose $\vec{\pt}_0, \vec{\pt}_1$ \\
+      s.t. $|\pt_{0, i}| = |\pt_{1, i}|$ for all $i$.
+    };
+    \node at (0, -0.5) (get_c) {$\vec{\ct}$};
+    \node[blue] at (0, -1.5) (q2) {query $\vec{\pt}$};
+    \node at (0, -2.5) (chs_bp) {answer $b' \in \binset{}$};
+
+    % lines
+    \draw[blue, <->] (q1) --+ (r1);
+    \draw[<-] (get_m0m1) --+ (chs_m0m1);
+    \draw[->] (enc) --+ (get_c);
+    \draw[blue, <->] (q2) --+ (r2);
+    \draw[<-] (get_bp) --+ (chs_bp);
+  \end{tikzpicture}
+  \caption{LR-CPA indistinguishability experiment of private-key encryption scheme}
+  \label{fig:exp_lr_cpa}
+\end{figure}
+
+\begin{definition} \label{def:lr-cpa}
+  Private-key encryption scheme $\sch$ has \emph{indistinguishable multiple encryptions under a chosen-plaintext attack}, or is \emph{CPA-secure for multiple encryptions}, if for all PPT distinguishers $\adv$ there is a negligible function $\negl$ such that
+  \begin{equation}
+    a % \pr{\explrcpa{\adv, \sch}(n) = 1} \le \frac{1}{2} + \negl(n).
+  \end{equation}
+  where the probability is taken over the randomness used by $\adv$ and the randomness used in the experiment.
+\end{definition}
+
+이 정의에서 사용한 부등식은 IND-PASS의 정의와 비슷한 방법으로 다음과 같이 바꿔서 사용할 수 있습니다.
+\begin{equation}
+  \abs{
+    \pr{\adv(1^n) = 1 \when b = 0} - \pr{\adv(1^n) = 1 \when b = 1}
+  } \le \negl(n).
+\end{equation}
+
+다음의 정리 $\ref{thm:cpa_to_lr_cpa}$에 의해, 어떤 개인 키 암호 체계 $\sch$가 단일 암호화의 경우 CPA-secure하다는 것을 증명하는 것으로 그 체계가 다중 암호화의 경우에도 CPA-secure하다는 결론을 내릴 수 있습니다.
+
+\begin{theorem} \label{thm:cpa_to_lr_cpa}
+  Any private-key encryption scheme that is CPA-secure is also CPA-secure for multiple encryptions.
+\end{theorem}
+
+\begin{proof}
+  $\sch$이 다중 IND-CPA secure하지 않다고 가정합니다. 즉, 공격자 $\adv$에 대해,
+  다음을 만족하는 negligible 함수 $\negl$이 존재합니다. (대우 증명)
+  \begin{equation}
+    \abs{\pr{\adv(1^n) = 1 \when b = 0} - \pr{\adv(1^n) = 1 \when b = 1}} 
+    > \negl(n).
+    \label{equ:pf_not_mult_ind_cpa}
+  \end{equation}
+
+  $\time = \time(\klen)$을 구분자 $\adv$가 실험 $\ref{fig:cpa_to_lr_cpa}$에서 암호화 
+  오라클에  질의하는 최대 다항 횟수라고 합시다. 키 $\key$와 $1 \le i \le \time$를 만족하는 
+  $i$에 대해, $i = \time$이라면 $\adv$관점에서 볼 때 이 실험은 $b = 0$일 때의 다중 IND-CPA 
+  실험과 같고, $i = 0$이라면 $b = 1$일 때의 다중 IND-CPA 실험과 같습니다. 따라서 처음의 
+  식 $\ref{equ:pf_not_mult_ind_cpa}$를 다음과 같이 바꿀 수 있습니다.
+  \begin{equation}
+    \abs{
+      \pr{\adv(1^n) = 1 \when \vec{\ct} = (\ct_{0, 0}, \cdots, \ct_{0, t - 1})} 
+      - 
+      \pr{\adv(1^n) = 1 \when \vec{\ct} = (\ct_{1, 0}, \cdots, \ct_{1, t - 1})}
+    } 
+    > \negl(n).
+  \end{equation}
+
+  \begin{figure}[h]
+    \centering
+      \begin{tikzpicture}
+        [inner sep=0.5cm, every text node part/.style={align=center}]
+        % experiment players and what players are doing
+        \node at (0, 0) (chl) {challenger $\chl$};
+        \node at (6, 0) (adv_p) {adversary $\advp$};
+        \node at (12, 0) (adv) {adversary $\adv$};
+
+        % draw lines
+        \draw[<->] (chl) -- (adv_p)
+        node[above, midway, inner sep=0.1cm] {\textsf{IND-CPA}};
+        \draw[<->] (adv_p) -- (adv)
+        node[above, midway, inner sep=0.1cm] {(multiple) \\ \textsf{IND-CPA}};
+
+        % challenger C
+        \node at (0, -1) (key_gen) {$k \samp \gen(1^n)$};
+        \node at (0, -3) (orc) {$\ct_j \samp \enc_k(\pt_j)$};
+        \node at (0, -5) (g_m0j) {$\ct_j \samp \enc_k(\pt_{0, j})$};
+        \node at (0, -6) (g_mi) {$\pt_{0, i}, \pt_{1, i}$};
+        \node at (0, -7) (b) {$b \unisamp \binset{}$};
+        \node at (0, -8) (enc) {$\ct_i \samp \enc_k(\pt_{b, i})$};
+        \node at (0, -9) (g_m1j) {$\ct_j \samp \enc_k(\pt_{1, j})$};
+        \node at (0, -11) (orc_2) {$\ct_j \samp \enc_k(\pt_j)$};
+        \node at (0, -13) (return) {return $b \issame b'$};
+        \node at (0, -12) (get_bp_2) {$b'$};
+
+        % adversary B
+        \node at (6, -2) (g_i) {$i \unisamp \set{1, \cdots, t}$};
+        \node at (6, -3) (get_m) {$\vec{\pt}$};
+        \node at (6, -4) (get_m0m1) {$\vec{m}_0, \vec{m}_1$};
+        \node at (6, -5) (m0j) {$\pt_{0, j}$ $(j < i)$};
+        \node at (6, -6) (mi) {$\pt_{0, i}, \pt_{1, i}$ $(j = i)$};
+        \node at (6, -8) (c) {$\ct_i$};
+        \node at (6, -9) (m1j) {$\pt_{1, j}$ $(j > i)$};
+        \node at (6, -10) (get_c) {
+          $\vec{\ct} = (\ct_{0,1}, \cdots, \ct_{0, i-1}, \ct_i, \ct_{1, i+1}, 
+          \cdots, \ct_{1, t})$
+        };
+        \node at (6, -11) (get_m_2) {$\vec{m}$};
+        \node at (6, -12) (get_bp) {$b'$};
+
+        % adversary A
+        \node at (12, -3) (chs_m) {choose $\vec{\pt}$};
+        \node at (12, -4) (chs_m0m1) {choose $\vec{m}_0, \vec{m}_1$};
+        \node at (12, -10) (get_c_2) {$\vec{c}$};
+        \node at (12, -11) (chs_m_2) {choose $\vec{m}$};
+        \node at (12, -12) (chs_bp) {choose $b' \in \binset{}$};
+
+        %draw lines
+        \draw[blue, <->] (get_m) -- (chs_m)
+        node [midway, above, inner sep=0.1cm] {query $\vec{\pt}$}
+        node [midway, below, inner sep=0.1cm] {response $\vec{\ct}$};
+
+        \draw[red, <->] (orc) -- (get_m)
+        node [midway, above, inner sep=0.1cm] {query $\pt_j$}
+        node [midway, below, inner sep=0.1cm] {response $\ct_j$};
+
+        \draw[<-] (get_m0m1) -- (chs_m0m1);
+
+        \draw[red, <->] (g_m0j) -- (m0j)
+        node[midway, above, inner sep=0.1cm] {query $\pt_{0, j}$}
+        node [midway, below, inner sep=0.1cm] {response $\ct_j$};
+
+        \draw[<-] (g_mi) -- (mi);
+        \draw[->] (enc) -- (c);
+
+        \draw[red, <->] (g_m1j) -- (m1j)
+        node[midway, above, inner sep=0.1cm] {query $\pt_{1, j}$}
+        node [midway, below, inner sep=0.1cm] {response $\ct_j$};
+
+        \draw[->] (get_c) -- (get_c_2);
+
+        \draw[blue, <->] (get_m_2) -- (chs_m_2)
+        node [midway, above, inner sep=0.1cm] {query $\vec{m}$}
+        node [midway, below, inner sep=0.1cm] {response $\vec{c}$};
+
+        \draw[red, <->] (orc_2) -- (get_m_2)
+        node [midway, above, inner sep=0.1cm] {query $\pt_j$}
+        node [midway, below, inner sep=0.1cm] {response $\ct_j$};
+
+        \draw[<-] (get_bp) -- (chs_bp);
+        \draw[<-] (get_bp_2) -- (get_bp);
+      \end{tikzpicture}
+    \caption{A CPA-secure experiment with $\adv$ and $\adv'$}
+    \label{fig:cpa_to_lr_cpa}
+  \end{figure}
+
+  실험 \ref{fig:cpa_to_lr_cpa}에서, $b = 0$인 경우 $\advp$은 어떤 $i = i^*$에 대해 
+  $i^* \ge j$라면 $m_{j, 0}$의 암호문을, $i^* < j$라면 $m_{j, 1}$의 암호문을 $\adv$에게 
+  전달하게 됩니다. 따라서 다음이 성립합니다.
+  \begin{equation}
+    \begin{split}
+      \pr{\advp(1^n) = 1 \when b = 0} 
+      &= \sum_{i^* = 1}^t \pr{\advp(1^n) = 1 \when b = 0 \and i = i^*}
+      \cdot \pr{i = i^*} \\
+      &= \frac{1}{t} \cdot \sum_{i^* = 1}^t \pr{\adv(1^n) = 1 \when \vec{\ct} 
+      = (\cdots, \ct_{0, i^* - 1}, \ct_{0, i^*}, \ct_{1, i^* + 1}, \cdots)}
+      \label{equ:b0orc}
+    \end{split}
+  \end{equation}
+  \begin{equation}
+    \begin{split}
+      \pr{\advp(1^n) = 1 \when b = 1} 
+      &= \sum_{i^* = 1}^t \pr{\advp(1^n) = 1 \when b = 1 \and i = i^*} 
+      \cdot \pr{i = i^*} \\
+      &= \frac{1}{t} \cdot \sum_{i^* = 1}^t \pr{\adv(1^n) = 1 \when \vec{\ct} 
+      = (\cdots, \ct_{0, i^* - 1}, \ct_{1, i^*}, \ct_{1, i^* + 1}, \cdots)} \\
+      &= \frac{1}{t} \cdot \sum_{i^* = 0}^{t - 1} 
+      \pr{\adv(1^n) = 1 \when \vec{\ct} 
+      = (\cdots, \ct_{0, i^*}, \ct_{1, i^* + 1}, \ct_{1, i^* + 2}, \cdots)} \\
+      \label{equ:b1orc}
+    \end{split}
+  \end{equation}
+
+  식 \ref{equ:b0orc}과 \ref{equ:b1orc}에 의해, 다음이 성립합니다.
+  \begin{equation}
+    \begin{split}
+      & \abs{
+        \pr{\advp(1^n) = 1 \when b = 0} - \pr{\advp(1^n) = 1 \when b = 1}
+      } \\
+      &= \frac{1}{t} \cdot \abs{
+        \sum_{i^* = 1}^t \pr{\adv(1^n) = 1 \when \vec{\ct} 
+        = (\cdots, \ct_{0, i^*}, \ct_{1, i^* + 1}, \ct_{1, i^* + 2}, \cdots)}
+        - \sum_{i^* = 0}^{t-1} \pr{\adv(1^n) = 1 \when \vec{\ct} 
+        = (\cdots, \ct_{0, i^* - 1}, \ct_{0, i^*}, \ct_{1, i^* + 1}, \cdots)}
+        } \\
+      &= \frac{1}{t} \cdot \abs{\pr{\adv(1^n) = 1 \when b = 0}
+       - \pr{\adv(1^n) = 1 \when b = 1}} > \negl'(n).
+    \end{split}
+  \end{equation}
+
+
+  $t$는 다항식이므로, $\abs{\pr{\adv'(1^n) = 1 \when b = 0} - \pr{\adv'(1^n) = 1 \when b = 1}}$는 negligible하지 않습니다. 따라서 $\sch$는 $\adv'$에 대해 CPA-secure하지 않습니다. 결론적으로 $\sch$이 CPA-secure하다면, 다중 암호화의 경우에도 CPA-secure합니다.
+\end{proof}

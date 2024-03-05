@@ -1,0 +1,92 @@
+% ******************************** packages ******************************** %
+\usepackage{kotex}
+\usepackage[many]{tcolorbox}
+\usepackage{algpseudocode}
+\usepackage{fancyhdr}
+\usepackage{listings}
+\usepackage{hyperref}
+\usepackage{cite}
+\usepackage{graphicx}
+\usepackage{amssymb, amsmath, amsthm}
+\usepackage{tikz}
+\usepackage{xcolor}
+\usepackage{tcolorbox}
+\usepackage{setspace}
+\usepackage[hmargin=20mm, vmargin=20mm]{geometry}
+\usepackage{mdframed}
+\usepackage{soul} % 밑줄 정렬 패키지
+\usepackage{algorithm}
+\usepackage{algpseudocode}
+\usepackage{chngcntr} % 넘버링을 바꿀수 있게 해주는 패키지
+
+% ******************************** ? ******************************** %
+% ?
+\usetikzlibrary{arrows, positioning, calc}
+
+% ?
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\rightmark}
+\cfoot{\thepage}
+\onehalfspacing
+
+% \hypersetup{
+%     colorlinks = true,
+%     linkcolor = blue,
+%     urlcolor = red,
+%     pdftitle = {}
+% }
+
+\tcbset{colback=white}
+
+% algorithm setting
+\algrenewcommand\algorithmicrequire{\textbf{Input:}}
+\algrenewcommand\algorithmicensure{\textbf{Output:}}
+\newcommand{\algorithmicbreak}{\textbf{break}}
+\newcommand{\Break}{\algorithmicbreak}
+
+\counterwithin{figure}{chapter} % figure 넘버링
+
+% ****************************** theorem style ***************************** %
+% 수학 문서 포맷 https://www.overleaf.com/learn/latex/Theorems_and_proofs
+% [section]: 섹션 단위로 번호를 매김
+% [theorem]: 정리 단위로 번호를 매김
+\theoremstyle{definition}
+\newtheorem{definition}{Definition}[section]    % 정의
+\newtheorem{theorem}{Theorem}[section]          % 정리
+\newtheorem{lemma}{Lemma}[section]              % 보조정리
+\newtheorem{corollary}{Corollary}[section]      % 따름정리
+\newtheorem{proposition}{Proposition}[section]  % 명제
+
+
+% **************************** my math commands **************************** %
+% algorithm
+\newcommand{\samp}{\longleftarrow}
+\newcommand{\unisamp}{\overset{\$}\longleftarrow}
+\newcommand{\issame}{\overset{?}{=}}
+\newcommand{\rif}{\rightarrow}
+\newcommand{\lif}{\leftarrow}
+\newcommand{\xor}{\oplus}
+\newcommand{\err}{\perp}
+\renewcommand{\and}{\wedge}
+
+% linear algebra
+\newcommand{\binset}[1]{\{0, 1\}^{#1}}
+\newcommand{\veclist}[2]{(#1, \cdots, #2)}
+\renewcommand{\vec}[1]{\mathbf{#1}}
+
+% probabilistic
+\newcommand{\pr}[1]{\text{Pr} \left[ #1 \right]}
+\newcommand{\when}{\;|\;}
+
+% basic
+\newcommand{\set}[1]{\{#1\}}
+\newcommand{\abs}[1]{\left| #1 \right|}
+\newcommand{\brk}[1]{\left( #1 \right)}
+\newcommand{\cyc}[1]{\langle #1 \rangle}
+
+% text
+\newcommand{\memo}[1]{\textcolor{gray}{\text{\scriptsize (#1)}}}
+\renewcommand{\tt}[1]{\text{ #1 }}
+\renewcommand{\newline}{{\color{white}-}}
+\renewcommand{\emph}[1]{\ul{\textbf{#1}}}

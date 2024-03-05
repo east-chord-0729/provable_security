@@ -1,0 +1,129 @@
+\section{Constructing a CPA-Secure Encryption Scheme}
+
+이 장에서는 Pseudorandom Function(PRF)과 Pseudorandom Permutation(PRP)을 정의합니다.
+
+\subsection*{Pseudorandom Functions}
+균일한 키 $\key \in \binset{\klen}$에 대한 효율적이고 결정론적인 키 함수 
+$\prf: \binset{\inlen} \to \binset{\outlen}$가, 동일한 정의역과 치역을 가지는 모든 
+함수의 집합 $\rfspace$에서 균일하게 임의로 선택된 함수 $\rf$와 구별할 수 없는 경우, $\prf$를 
+PRF라고 합니다. 공식적인 정의를 위해 다음과 같이 실험 \ref{fig:exp_prf}를 구성합니다. 이 실험에서 
+오라클 $\orc$은 결정론적입니다.
+
+\begin{figure}[ht]
+  \centering
+  \begin{tikzpicture}
+    [inner sep=0.5cm, every text node part/.style={align=left}]
+    % experiment players and what players are doing
+    \node at (0, 0) (chl) {challenger $\chl$};
+    \node at (7, 0) (adv) {adversary $\adv$};
+
+    % draw lines
+    \draw[<->] (chl) -- (adv)
+    node[above, midway, inner sep=0.1cm] {\textsf{PRF} experiment};
+
+    % challenger C
+    \node at (0, -1) (key_gen) {$k \samp \gen(1^n)$};
+    \node at (0, -2) (b) {$b \unisamp \binset{}$};
+    \node at (0, -4) (get_x) {
+      if $b = 1$ \\
+      \quad $y \samp \prf(x)$ \\
+      otherwise \\
+      \quad $y \samp \rf(x)$
+      };
+    \node at (0, -6) (get_bp) {$b'$};
+    \node at (0, -7) (return) {return $b \issame b'$};
+
+    % adversary A
+    \node at (7, -1) (get_n) {$1^n$};
+    \node at (7, -4) (chs_x) {choose $x$};
+    \node at (7, -6) (chs_bp) {choose $b' \in \binset{}$};
+
+    % draw lines
+    \draw [->] (key_gen) -- (get_n);
+    \draw[red, <->] (chs_x) -- (get_x)
+    node [midway, above, inner sep=0.1cm] {query $x$}
+    node [midway, below, inner sep=0.1cm] {response $y$};
+    \draw[<-] (get_bp) -- (chs_bp);
+
+  \end{tikzpicture}
+  \caption{Indistinguishability experiment for a PRF}
+  \label{fig:exp_prf}
+\end{figure}
+
+$\rfspace$에서 $\rf$를 균등하게 뽑는 과정은 효율적이지 않습니다. 따라서 적절한 실험 구성을 위해 
+알고리듬 $\ref{alg:rf}$와 같이 on-the-fly 방식으로 $\rf$를 구현합니다.
+
+\begin{algorithm}
+  \begin{algorithmic}[1]
+    \Require $x$
+    \Ensure $y$
+    \Procedure{$\rf(x)$}{}
+    \If{$\exists (x, y') \in \tb$}
+    \State $y \samp y'$
+    \ElsIf{$\nexists (x, y') \in \tb$}
+    \State $y \unisamp \binset{n}$
+    \State $\tb \samp \tb \cup (x, y)$
+    \EndIf
+    \State \Return $y$
+    \EndProcedure
+  \end{algorithmic}
+  \caption{Random Function (on-the-fly)}
+  \label{alg:rf}
+\end{algorithm}
+
+실험 \ref{fig:exp_prf}을 바탕으로 PRF를 정의합니다.
+
+\begin{definition} \label{def:prf}
+  An efficient, keyed function
+  $\prf: \binset{\inlen} \to \binset{\outlen}$ is a \emph{pseudorandom function} 
+  if for all PPT distinguishers $\adv$, there is a negligible function $\negl$ 
+  such that:
+  \begin{equation}
+    \pr{\expprf{\adv, \prf}(n) = 1} \le \frac{1}{2} + \negl(n).
+    \label{equ:prf}
+  \end{equation}
+\end{definition}
+
+명제 \ref{pro:same_def}와 비슷한 방법으로, 식 \ref{equ:prf}을 다음과 같이 바꿀 수 있습니다.
+\begin{equation}
+  \abs{\pr{\adv^{\prf}(1^n) = 1} - \pr{\adv^{\rf}(1^n) = 1}} \le \negl(n).
+  \label{equ:prf2}
+\end{equation}
+
+\subsection*{Pseudorandom Permutations}
+$\prp$가 PRF이면서 전단사 함수라면, 우리는 $\prp$를 PRP라고 합니다. 즉, 균일한 키 
+$\key \in \binset{\klen}$에 대한 효율적이고 결정론적인 키 함수 
+$\prp: \binset{\len} \to \binset{\len}$가, 동일한 정의역과 치역을 가지는 모든 일대일
+함수(순열)의 집합 $\rpspace$에서 균일하게 임의로 선택된 함수 $\rp$와 구별할 수 없는 경우, 
+$\prp$를 PRP라고 합니다. PRP의 정의 및 실험은 PRF와 유사하므로 생략하며, $\rp$를 on-the-fly 
+방식으로 구현한 알고리듬만 소개합니다.
+\begin{algorithm}
+  \begin{algorithmic}[1]
+    \Require $x$
+    \Ensure $y$
+    \Procedure{$\rp(x)$}{}
+    \If{$\exists (x, y') \in \tb$}
+    \State $y \samp y'$
+    \ElsIf{$\nexists (x, y') \in \tb$}
+    \While{$\nexists (x', y) \in \tb$}
+    \State $y \unisamp \binset{n}$
+    \EndWhile
+    \State $\tb \samp \tb \cup (x, y)$
+    \EndIf
+    \State \Return $y$
+    \EndProcedure
+  \end{algorithmic}
+  \caption{Random Permutation (on-the-fly)}
+  \label{alg:rp}
+\end{algorithm}
+
+$\prp$가 키 순열이라면 $\prp$를 기반으로 한 암호 체계는 $\prp$ 자체를 계산하는 것 외에도 
+$\iprp$를 계산해야 할 수도 있습니다. 이는 잠재적으로 새로운 보안 문제를 야기할 수 있습니다. 
+특히, 이제는 구분자에게 역 순열에 대한 오라클 접근 권한이 추가로 주어져도 $\prp$와 $\rp$을 구별할 수 
+없다는 더 강력한 요구 사항을 부과해야 할 수도 있습니다. $\prf$가 이러한 속성을 가지고 있다면, 우리는 
+이를 strong PRP(SPRP)이라고 부릅니다. 즉, 다음의 식을 만족하는 negligible 함수 $\negl$가 
+존재한다면, $\prp$는 SPRP입니다.
+\begin{equation}
+  \abs{\pr{\adv^{\prp, \iprp}(1^n) = 1} - \pr{\adv^{\rp, \irp}(1^n) = 1}}
+  \le \negl(n).
+\end{equation}

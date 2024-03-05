@@ -1,0 +1,4 @@
+\contentsline {chapter}{\numberline {1}Private Key Encryption}{2}{chapter.1}%
+\contentsline {section}{\numberline {1.1}Stronger Security Notions}{3}{section.1.1}%
+\contentsline {section}{\numberline {1.2}Constructing a CPA-Secure Encryption Scheme}{7}{section.1.2}%
+\contentsline {section}{\numberline {1.3}Modes of Operation and Encryption}{9}{section.1.3}%

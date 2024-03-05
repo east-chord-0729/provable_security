@@ -1,0 +1,108 @@
+\section{Constructing an EAV-Secure Encryption Scheme}
+
+EAV-secure한 암호화 체계를 구성하기 전에 먼저 의사난수생성기(Pseudorandom Generator, PRG for short)의
+중요한 개념을 소개합니다.
+
+% 암호화 체계가 안전하다는 것이 무엇을 의미하는지 정의한 후, 독자는 우리가 안전한 암호화 체계의 구성에 즉시 눈을 돌릴 것으로 기대할 수 있습니다. 그러나 그렇게 하기 전에 개인 키 암호화의 중요한 구성 요소인 의사 무작위 생성기(PRG)의 개념을 소개해야 합니다. 이는 결국 일반 암호화와 특히 개인 키 암호화에서 근본적인 역할을 하는 의사 무작위성에 대한 논의로 이어질 것입니다.
+
+\subsection*{Pseudorandom Generators}
+
+의사난수생성기 $\prg$는 시드(seed)라고 불리는 짧고 균일한 문자열을 더 길고 균일해 보이는 출력 문자열로 변환하기 위한 효율적이고 결정론적인 알고리즘입니다. 의사난수생성기는 많은 양의 의사난수(pseudorandomness)를 생성하기 위해 적은 양의 진 난수(true randomness)를 사용합니다. 진 난수를 생성하는 것은 어렵고 느린 경우가 많기 때문에, 이것은 많은 수의 무작위 비트가 필요할 때마다 유용합니다.
+
+% (2장 앞부분의 설명 참조) 의사난수 생성기는 적어도 1940년대부터 통계 시뮬레이션을 실행하는 데 사용되어 연구되어 왔습니다. 그 맥락에서, 연구자들은 의사난수 생성기가 "좋은" 것으로 간주되기 위해 통과해야 하는 다양한 통계적 테스트를 제안했습니다. 간단한 예로, 의사난수 생성기의 출력의 첫 번째 비트는 1과 1/2에 매우 가까운 확률로 1이어야 하고 (시드의 균일한 선택보다 확률이 더 높은) 확률로 1을 선택해야 한다고 요구할 수 있습니다. 다른 예로, 균일한 문자열의 첫 번째 비트는 정확히 1/2이기 때문에, 의사난수 생성기의 출력의 첫 번째 비트는 1과 같아야 합니다. (시드의 균일한 선택보다 확률이 더 높은) 다른 예로, 출력 비트의 고정 부분 집합의 패리티도 1/2에 매우 가까운 확률로 1이어야 합니다. 더 복잡한 통계적 테스트도 고려할 수 있습니다.
+
+% 일부 후보 의사난수 생성기의 품질을 결정하기 위한 이러한 이력 접근 방식은 만족스럽지 않은데, 일부 통계 테스트 세트를 통과하면 일부 응용 프로그램에 후보 의사난수 생성기를 사용하는 것의 건전성을 보장하기에 충분하기 때문입니다. (특히, 생성기의 출력을 실제 무작위 비트와 성공적으로 구별하는 또 다른 통계 테스트가 있을 수 있습니다.) 암호 응용 프로그램에 의사난수 생성기를 사용할 때 이력 접근 방식은 훨씬 더 문제가 됩니다. 따라서 공격자가 의사난수 생성기의 출력을 균일한 것과 구별할 수 있다면 보안이 손상될 수 있으며, 공격자가 어떤 전략을 사용할 수 있는지 미리 알 수 없기 때문입니다.
+
+% 위의 고려사항들은 1980년대에 의사난수 생성기를 정의하는 암호학적 접근법에 동기를 부여했습니다. 기본적인 깨달음은 좋은 의사난수 생성기는 모든 (효율적인) 통계적 검정을 통과해야 한다는 것이었습니다. 즉, 어떤 효율적인 통계적 검정(또는 구별기) D의 경우, 의사난수 생성기의 출력이 주어졌을 때 D가 1을 반환할 확률은 같은 길이의 균일한 문자열이 주어졌을 때 D가 1을 반환할 확률에 가까워야 합니다. 비공식적으로, 이것은 임의의 효율적인 관찰자에게 균일하게 생성된 문자열을 "닮은" 의사난수 생성기의 출력을 의미합니다.
+
+% 먼저 분포의 의미를 정의하는 것으로 시작합니다. Dist를 ℓ 비트열에 대한 분포라고 가정해 보겠습니다. (이는 Dist가 {0,1}^ ℓ의 모든 문자열에 일정한 확률을 할당한다는 것을 의미하며, Dist의 샘플링은 이 확률 분포에 따라 ℓ 비트열을 선택한다는 것을 의미합니다.) 비공식적으로 Dist는 문자열이 Dist에서 샘플링되는 실험과 길이가 ℓ인 균일한 문자열이 샘플링되는 실험을 구별할 수 없는 경우 의사 무작위입니다. (엄밀하게 말하면, 우리는 점근적 설정에 있기 때문에 분포 Dist_n이 보안 매개변수 n에 사용되는 Dist = {Dist_n} 분포 시퀀스의 의사 무작위성에 대해 말할 필요가 있습니다. 우리는 현재 논의에서 이 점을 무시합니다.) 더 정확하게는 어떤 다항식 시간 알고리즘도 Dist에 따라 샘플링된 문자열이 주어지는지, 아니면 균일한 ℓ 비트열이 주어지는지 여부를 결정하는 것은 (추측하는 것보다 더 나은) 불가능해야 합니다. 이것은 우리가 다항식 시간 관찰자만 고려하는 한 의사 무작위 문자열이 균일한 문자열만큼 우수하다는 것을 의미합니다. 우리는 고정된 문자열을 "균일"이라고 부르는 것이 무의미한 방식으로 어떤 고정된 문자열도 "pseud 또는 무작위"라고 말하는 것이 이치에 맞지 않는다는 것을 강조합니다. 오히려 의사 무작위성은 문자열에 대한 분포의 속성입니다. (그럼에도 불구하고, 우리는 균일한 분포에 따라 샘플링된 문자열을 "균일한 문자열"이라고 말하는 것과 같은 방식으로 의사 무작위 생성기에 의해 출력된 문자열을 비공식적으로 "pseud 또는 무작위 문자열"이라고 부르기도 합니다.) 구별할 수 없는 것이 완벽한 비밀의 계산적 완화인 것처럼, 의사 무작위성은 진정한 무작위성의 계산적 완화입니다.
+
+$\prg$를 길이 $n$의 문자열을 길이 $l(n) > n$의 출력에 매핑하는 효율적으로 계산 가능한 함수라고 합시다. 효율적인 구분자가 $\prg$에 의해 출력된 문자열이 주어지는지 아니면 임의로 균일하게 선택된 문자열이 주어지는지 구분할수 없는 경우 $\prg$를 PRG라고 부릅니다. 보안 매개변수 $n$이 시드의 길이를 결정하도록 하고 $\prg$가 효율적인 알고리즘에 의해 계산됩니다. 기술적으로 $\prg$의 출력은 입력보다 길어야 합니다. 공식적인 정의는 다음과 같습니다.
+
+\begin{definition} \label{def:prg}
+    Let $\prg$ be a DPT algorithm such that for any $n$ and any input $s \in \binset{n}$, the result $\prg(s)$ is a string of length $l(n)$. $\prg$ is a \emph{pseudorandom generator} if the following conditions hold:
+    \begin{itemize}
+        \item (Expansion.) For every $n$ it holds that $l(n) > n$. We call $l(n)$ the \emph{expansion factor} of $\prg$.
+        \item (Pseudorandomness.) For any PPT algorithm $D$, there is a negligible function $\negl$ such that
+              \begin{equation}
+                  \pr{D(\prg(s)) = 1} - \pr{D(r) = 1} \le \negl(n),
+              \end{equation}
+              where the first probability is taken over uniform choice of $s \in \binset{n}$ and the randomness of $D$, and the second probability is taken over uniform choice of $r \in \binset{l(n)}$ and the randomness of $D$.
+    \end{itemize}
+\end{definition}
+
+의사난수 생성기의 시드는 암호화 체계에서 사용하는 키와 유사하며, $\prg(s)$가 무작위로 보이기 위해서는 시드를 균일하게 선택해야 하며, 암호키의 경우와 마찬가지로 어떤 상대에게도 비밀로 유지되어야 하고, 무차별 대입 공격에 대비할 수 있도록 충분히 길어야 합니다.
+
+% 위의 무차별 대입 공격에 대한 논의에서 분명히 알 수 있는 또 다른 중요한 점은 s가 충분히 길어야 가능한 모든 시드를 열거하는 것이 불가능하다는 것입니다. 점근적인 의미에서 시드의 길이를 보안 매개변수와 동일하게 설정하면 이를 처리할 수 있으므로 가능한 모든 시드를 철저히 검색하려면 지수 시간이 필요합니다. 실제로 시드 길이 nm는 적어도 시간 2n에서 실행되는 무차별 대입 공격을 실행할 수 없을 정도로 충분히 커야 합니다.
+
+% 의사난수 생성기가 존재하는가? 그들은 확실히 구성하기 어려워 보이고, 어떤 알고리즘 G가 정의 3.14를 만족하는가에 대해서도 적절하게 질문할 수 있습니다. 비록 우리는 의사난수 생성기의 존재를 무조건적으로 증명하는 방법을 알지 못하지만, 우리는 어떤 (다항식) 확장 인자에 대해서도 그것들이 존재한다고 믿을 만한 강력한 이유가 있습니다. 우선, 그것들은 단방향 함수가 존재한다는 다소 약한 가정 하에서 구성될 수 있으며 (인수분해와 같은 특정 문제가 어려운 경우에는 사실입니다), 이것은 8장에서 자세히 설명합니다. 우리는 또한 효율적인 구분자가 알려져 있지 않은 스트림 암호라고 불리는 후보 의사난수 생성기에 대한 몇 가지 실용적인 구성을 가지고 있습니다. 자세한 내용은 3.6.1절과 구체적인 예는 7.1절을 참조하십시오. 이 장에서는, 우리는 단순히 의사난수 생성기가 어떤 다항식 확장 인자에 대해서도 존재한다고 가정하고, 그것들이 안전한 암호 체계를 구축하는 데 어떻게 사용될 수 있는지 탐구합니다. 건전한 방법으로 그렇게 하는 것은 감소에 의한 증명의 개념에 의존하며, 다음에 설명합니다.
+
+\newpage
+\subsection*{EAV-Security from a Pseudorandom Generator}
+
+의사난수 생성기는 메시지보다 짧은 키로 안전하고 고정된 길이의 암호화 체계를 구성하는 자연스러운 방법을 제공합니다. 우리는 암호화를 수행 할 때, 메시지와 함께 의사난수 패드를 XOR함으로써 수행됩니다. 송신자와 수신자는 필요할 때 패드를 생성하는 데 사용되는 균일한 시드를 공유할 수 있습니다. 이 시드는 패드보다 짧으며 따라서 메시지보다 짧습니다.
+
+\begin{construction} \label{def:prg-otp}
+    Let $\prg$ be a pseudorandom generator with expansion factor $l(n)$. Define a fixed-length private-key encryption scheme for messages of length $l(n)$ as follows:
+    \begin{itemize}
+        \item $\gen$: on input $1^n$, choose uniform $k \in \binset{n}$ and output it as the key.
+        \item $\enc$: on input a key $k \in \binset{n}$ and a message $m \in \binset{l(n)}$, output the ciphertext $c:= \prg(k) \xor m$.
+        \item $\dec$: on input a key $k \in \binset{n}$ and a ciphertext $c \in \binset{l(n)}$, output the message $m := \prg(k) \xor c$.
+    \end{itemize}
+\end{construction}
+
+\begin{theorem}
+    If $\prg$ is a pseudorandom generator, then Construction \ref{def:prg-otp} is an EAV-secure, fixed-length private-key encryption scheme for messages of length $l(n)$.
+\end{theorem}
+
+\begin{proof}
+    $\sch$이 구성 \ref{def:prg-otp}에서 $\prg$를 사용하는 암호화 체계라고 합시다. 다음의 실험을 하는 구분자 $D$와 $\adv$를 생각해봅시다. 이 실험은 $\adv$ 기준으로 볼 때 실험 $\expeav{\adv, \sch}(n)$과 동일합니다.
+    \begin{figure}[h]
+        \centering
+        \begin{tikzpicture}[>=latex]
+            \node[draw, minimum width=4.5cm, minimum height=7.5cm] (D) {};
+            \node[above] (D_name) at (D.north) {$D(1^n)$};
+
+            \node[draw, minimum width=4.5cm, minimum height=7.5cm] (A) at ([xshift=5.0cm]D) {};
+            \node[above] (A_name) at (A.north) {$\adv(1^n)$ in EAV experiment};
+
+            \node (key_gen) at ([xshift=-5.0cm, yshift=-1.0cm]D_name) {$k \samp \gen(1^n)$};
+            \node (prg) at ([yshift=-1.0cm]key_gen) {$w \samp \prg(k)$};
+            \node (get_prg) at ([xshift=5.0cm]prg) {$w$};
+            \draw[->] (prg) --+ (get_prg);
+
+            \node (choose_m0m1) at ([yshift=-1.0cm, xshift=5.0cm]get_prg) {choose $m_0, m_1 \in \binset{l(n)}$};
+            \node (get_m0m1) at ([xshift=-5.0cm]choose_m0m1) {$m_0, m_1$};
+            \draw[<-] (get_m0m1) --+ (choose_m0m1);
+
+            \node (b) at ([yshift=-1.0cm]get_m0m1) {$b \unisamp \binset{}$};
+
+            \node (response_rym2) at ([yshift=-1.0cm]b) {$c := w \xor m_b$};
+            \node (get_rym2) at ([xshift=5.0cm]response_rym2) {$c$};
+            \draw[->] (response_rym2) --+ (get_rym2);
+
+            \node (bp) at ([yshift=-1.0cm]get_rym2) {answer $b' \in \binset{}$};
+            \node (get_bp) at ([xshift=-5.0cm]bp) {$b'$};
+            \draw[<-] (get_bp) --+ (bp);
+            \node (output_bp) at ([yshift=-1.0cm]get_bp) {$b' \issame b$};
+        \end{tikzpicture}
+        \caption{}
+        \label{fig:}
+    \end{figure}
+
+    $\tilde{\sch}$이 $w \in \binset{l(n)}$를 균등하게 뽑는 암호화 체계라고 합시다. (즉, $\tilde{\sch}$은 OTP.) 이 때 다음의 식이 성립힙니다.
+    \begin{equation}
+        \pr{D(w) = 1 \when w \samp \prg(k)} = \pr{\expeav{\adv, \sch}(n) = 1},
+    \end{equation}
+    \begin{equation}
+        \pr{D(w) = 1 \when w \unisamp \binset{l(n)}} = \pr{\expeav{\adv, \tilde{\sch}}(n) = 1} = \frac{1}{2}.
+    \end{equation}
+
+    $\prg$의 정의에 의해 다음이 성립하므로, $\sch$은 EAV-secure합니다.
+    \begin{equation}
+        \abs{
+            \pr{\expeav{\adv, \sch}(n) = 1} - \frac{1}{2}
+        } \le \negl(n).
+    \end{equation}
+
+\end{proof}

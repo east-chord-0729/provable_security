@@ -1,0 +1,77 @@
+% 파일 설명 하기 %
+
+% players
+\newcommand{\adv}{\mathcal{A}}
+\newcommand{\advp}{\mathcal{B}}
+\newcommand{\chl}{\mathcal{C}}
+\newcommand{\dist}{\mathcal{D}}
+
+% private-key encryption scheme
+\newcommand{\sch}{\Pi}
+\newcommand{\schp}{\tilde{\Pi}}
+\newcommand{\gen}{\textsf{Gen}}
+\newcommand{\enc}{\textsf{Enc}}
+\newcommand{\dec}{\textsf{Dec}}
+
+% length
+\newcommand{\len}{l}
+\newcommand{\inlen}{\len_{in}}
+\newcommand{\outlen}{\len_{out}}
+\newcommand{\klen}{n} % key length (security parameter)
+\newcommand{\blen}{l} % block length
+
+% functions and variables
+\newcommand{\negl}{\varepsilon}
+\newcommand{\pt}{m}
+\newcommand{\ct}{c}
+\newcommand{\key}{k}
+\renewcommand{\time}{t}
+
+% experiments
+\newcommand{\expeav}[1]{\text{Exp}_{#1}^{\textsf{IND-PASS}}}
+\newcommand{\expsem}[1]{\text{Exp}_{#1}^{\textsf{SEM}}}
+\newcommand{\expcpa}[1]{\text{Exp}_{#1}^{\textsf{IND-CPA}}}
+\newcommand{\expprf}[1]{\text{Exp}_{#1}^{\textsf{PRF}}}
+\newcommand{\expprp}[1]{\text{Exp}_{#1}^{\textsf{PRP}}}
+\newcommand{\expsprp}[1]{\text{Exp}_{#1}^{\textsf{SPRP}}}
+
+% oracles
+\newcommand{\orc}{\mathcal{O}}
+\newcommand{\orcenc}[1]{\enc{#1}}
+\newcommand{\orclr}[1]{\text{LR}_{#1}}
+\newcommand{\orclri}[2]{\text{LR}_{#1}^{#2}}
+
+% pseudorandomness
+\newcommand{\seed}{s}
+\newcommand{\prg}{G}
+\newcommand{\rgspace}{\textsf{Dist}_n}
+\newcommand{\rf}{f}
+\newcommand{\prf}{F_{k}}
+\newcommand{\rfspace}{\textsf{Func}_l}
+\newcommand{\tb}{\textsf{Tab}}
+\newcommand{\rp}{p}
+\newcommand{\irp}{p^{-1}}
+\newcommand{\prp}{P_{k}}
+\newcommand{\iprp}{P^{-1}_{k}}
+\newcommand{\rpspace}{\textsf{Perm}_l}
+
+% stream cipher
+\newcommand{\stinit}{\textsf{Init}}
+\newcommand{\stnext}{\textsf{Next}}
+\renewcommand{\st}{\textsf{st}}
+\newcommand{\getbits}{\textsf{GetBits}}
+\newcommand{\sender}{S}
+\newcommand{\receiver}{R}
+
+% collision
+\newcommand{\coll}{\textsf{coll}}
+\newcommand{\nrepeat}{\overline{\textsf{repeat}}}
+\renewcommand{\repeat}{\textsf{repeat}}
+
+% Block cipher and mode of operantions
+\newcommand{\bc}{F} % block cipher
+\newcommand{\ibc}{F^{-1}} % inverse of block cipher
+\newcommand{\iv}{IV}
+\newcommand{\nonce}{\textsf{non}}
+\newcommand{\cbc}{\textsf{CBC}}
+\newcommand{\ctr}{\textsf{CTR}}
