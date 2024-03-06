@@ -229,17 +229,17 @@ $\pt_i \in \binset{\blen}$에 대해 $\vec{\pt} := (\pt_1, \pt_2, \cdots, \pt_l)
   구성하자. 만약 $\orc = \prp$이라면, $\adv$ 관점에서 볼 때, 이 실험은
   $\expcpa{\adv, \cbc[\prp]}$ 실험과 같다. 따라서 다음이 성립한다.
   \begin{equation} \label{equ:pf_cbc_prp}
-    \pr{\advp^{\cbc[\prp]}(1^n) = 1} = \pr{\expcpa{\adv, \cbc[\prp]}(n) = 1}.
+    \pr{\advp^{\prp}(1^n) = 1} = \pr{\expcpa{\adv, \cbc[\prp]}(n) = 1}.
   \end{equation}
   비슷한 방식으로, 만약 $\orc = \rp$라면, 이 실험은 $\expcpa{\adv, \cbc[\rp]}$ 실험과 같다.
   따라서 다음이 성립한다.
   \begin{equation} \label{equ:pf_cbc_rp}
-    \pr{\advp^{\cbc[\rp]}(1^n) = 1} = \pr{\expcpa{\adv, \cbc[\rp]}(n) = 1}.
+    \pr{\advp^{\rp}(1^n) = 1} = \pr{\expcpa{\adv, \cbc[\rp]}(n) = 1}.
   \end{equation}
   $\prp$는 PRP이므로, 다음을 만족하는 negligible 함수 $\negl$가 존재한다.
   \begin{equation}
     \abs{
-      \pr{\advp^{\cbc[\prp]}(1^n) = 1} - \pr{\advp^{\cbc[\rp]}(1^n) = 1}
+      \pr{\advp^{\prp}(1^n) = 1} - \pr{\advp^{\rp}(1^n) = 1}
     } \le \negl(n).
   \end{equation}
   이 식과 위에서 보인 두 식 \ref{equ:pf_cbc_prp}과 \ref{equ:pf_cbc_rp}을 통해 증명하기로한
@@ -247,7 +247,8 @@ $\pt_i \in \binset{\blen}$에 대해 $\vec{\pt} := (\pt_1, \pt_2, \cdots, \pt_l)
 
   \begin{figure}[ht]
     \centering
-    \begin{tikzpicture}[inner sep=0.5cm]
+    \begin{tikzpicture}
+      [inner sep=0.5cm, every text node part/.style={align=center}]
       % experiment players and what players are doing
       \node at (0, 0) (chl) {challenger $\chl$};
       \node at (6, 0) (adv_p) {adversary $\advp$};
@@ -261,54 +262,68 @@ $\pt_i \in \binset{\blen}$에 대해 $\vec{\pt} := (\pt_1, \pt_2, \cdots, \pt_l)
 
       % challenger C
       \node at (0, -1) (key_gen) {$k \samp \gen(1^n)$};
-      \node at (0, -2) (orc) {$\vec{c} = \cbc[\orc](\vec{m})$};
-      \node at (0, -4) (get_mb) {$\vec{m}_b$};
-      \node at (0, -5) (enc) {$\vec{c} = \cbc[\orc](\vec{m}_b)$};
-      \node at (0, -6) (orc_2) {$\vec{c} = \cbc[\orc](\vec{m})$};
+      \node at (0, -2.5) (samp_orc) {
+        $b \unisamp \binset{}$ \\
+        $\orc := \prp$, if $b = 1$ \\
+        $\orc := \rp$, otherwise
+      };
+      \node at (0, -4) (orc) {$c_i \samp \orc(x_i)$};
+      \node at (0, -8) (orc2) {$c_i \samp \orc(x_i)$};
+      \node at (0, -11) (orc3) {$c_i \samp \orc(x_i)$};
+      \node at (0, -13) (get_bp2) {$b'$};
+      \node at (0, -14) (return) {return $b' \issame b$};
 
       % adversary B
-      \node at (6, -2) (get_m) {$\vec{m}$};
-      \node at (6, -3) (get_m0m1) {$\vec{m}_0, \vec{m}_1$};
-      \node at (6, -4) (samp_b) {$b \unisamp \binset{}$};
-      \node at (6, -5) (get_c) {$\vec{c}$};
-      \node at (6, -6) (get_m_2) {$\vec{m}$};
-      \node at (6, -7) (get_bp) {$b'$};
-      \node at (6, -8) (return) {return $b \issame b'$};
+      \node at (6, -4) (cbc) {
+        $\iv \unisamp \binset{n}$ \\
+        $x_i := m_i \xor \ct_{i - 1}$ \\
+        $(c_0 := \iv, i = 1, \cdots, l)$ \\
+        $\vec{\ct} = (\iv, \ct_1, \cdots, \ct_{\blen})$
+      };
+      \node at (6, -6) (samp_b) {$b^* \unisamp \binset{}$};
+      \node at (6, -8) (cbc2) {
+        $\iv \unisamp \binset{n}$ \\
+        $x_i := m_{b^*, i} \xor \ct_{i - 1}$ \\
+        $(c_0 := \iv, i = 1, \cdots, l)$ \\
+        $\vec{\ct} = (\iv, \ct_1, \cdots, \ct_{\blen})$
+      };
+      \node at (6, -11) (cbc3) {
+        $\iv \unisamp \binset{n}$ \\
+        $x_i := m_i \xor \ct_{i - 1}$ \\
+        $(c_0 := \iv, i = 1, \cdots, l)$ \\
+        $\vec{\ct} = (\iv, \ct_1, \cdots, \ct_{\blen})$
+      };
+      \node at (6, -13) (get_bp) {$b'$};
 
       % adversary A
-      \node at (12, -2) (chs_m) {choose $\vec{m}$};
-      \node at (12, -3) (chs_m0m1) {choose $\vec{m}_0, \vec{m}_1$};
-      \node at (12, -5) (get_c_2) {$\vec{c}$};
-      \node at (12, -6) (chs_m_2) {choose $\vec{m}$};
-      \node at (12, -7) (chs_bp) {choose $b' \in \binset{}$};
+      \node at (12, -4) (chs_m) {choose $\vec{m}$};
+      \node at (12, -8) (chs_m0m1) {choose $\vec{m}_0, \vec{m}_1$};
+      \node at (12, -11) (chs_m_2) {choose $\vec{m}$};
+      \node at (12, -13) (chs_bp) {choose $b' \in \binset{}$};
 
-      %draw lines
-      \draw[blue, <->] (get_m) -- (chs_m)
+      % draw lines: B <-> A
+      \draw[blue, <->] (cbc) -- (chs_m)
       node [midway, above, inner sep=0.1cm] {query $\vec{m}$}
       node [midway, below, inner sep=0.1cm] {response $\vec{c}$};
-
-      \draw[red, <->] (orc) -- (get_m)
+      \draw[<->] (cbc2) -- (chs_m0m1)
+      node [midway, above, inner sep=0.1cm] {send $\vec{m_0}, \vec{m_1}$}
+      node [midway, below, inner sep=0.1cm] {challenge $\vec{c}$};
+      \draw[blue, <->] (cbc3) -- (chs_m_2)
       node [midway, above, inner sep=0.1cm] {query $\vec{m}$}
       node [midway, below, inner sep=0.1cm] {response $\vec{c}$};
-
-      \draw[<-] (get_m0m1) -- (chs_m0m1);
-
-      \draw[red, <-] (get_mb) -- (samp_b)
-      node[midway, above, inner sep=0.1cm] {query $\vec{m}_b$};
-      \draw[red, ->] (enc) -- (get_c)
-      node[midway, above, inner sep=0.1cm] {response $\vec{c}$};
-
-      \draw[->] (get_c) -- (get_c_2);
-
-      \draw[blue, <->] (get_m_2) -- (chs_m_2)
-      node [midway, above, inner sep=0.1cm] {query $\vec{m}$}
-      node [midway, below, inner sep=0.1cm] {response $\vec{c}$};
-
-      \draw[red, <->] (orc_2) -- (get_m_2)
-      node [midway, above, inner sep=0.1cm] {query $\vec{m}$}
-      node [midway, below, inner sep=0.1cm] {response $\vec{c}$};
-
       \draw[<-] (get_bp) -- (chs_bp);
+
+      % draw lines: C <-> B
+      \draw[red, <->] (orc) -- (cbc)
+      node [midway, above, inner sep=0.1cm] {query $x_i$}
+      node [midway, below, inner sep=0.1cm] {response $c_i$};
+      \draw[red, <->] (orc2) -- (cbc2)
+      node [midway, above, inner sep=0.1cm] {query $x_i$}
+      node [midway, below, inner sep=0.1cm] {response $c_i$};
+      \draw[red, <->] (orc3) -- (cbc3)
+      node [midway, above, inner sep=0.1cm] {query $x_i$}
+      node [midway, below, inner sep=0.1cm] {response $c_i$};
+      \draw[<-] (get_bp2) -- (get_bp);
     \end{tikzpicture}
     \caption{\textsf{IND-CPA} experiment of private-key encryption scheme with
       CBC mode}

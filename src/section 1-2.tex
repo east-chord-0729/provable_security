@@ -236,12 +236,12 @@ CPA-secure 정의는 다중 암호화의 경우로 확장할 수 있습니다. �
         \node at (0, -1) (key_gen) {$k \samp \gen(1^n)$};
         \node at (0, -3) (orc) {$\ct_j \samp \enc_k(\pt_j)$};
         \node at (0, -5) (g_m0j) {$\ct_j \samp \enc_k(\pt_{0, j})$};
-        \node at (0, -6) (g_mi) {$\pt_{0, i}, \pt_{1, i}$};
-        \node at (0, -7) (b) {$b \unisamp \binset{}$};
-        \node at (0, -8) (enc) {$\ct_i \samp \enc_k(\pt_{b, i})$};
-        \node at (0, -9) (g_m1j) {$\ct_j \samp \enc_k(\pt_{1, j})$};
+        \node at (0, -6) (g_m1j) {$\ct_j \samp \enc_k(\pt_{1, j})$};
+        \node at (0, -7) (g_mi) {$\pt_{0, i}, \pt_{1, i}$};
+        \node at (0, -8) (b) {$b \unisamp \binset{}$};
+        \node at (0, -9) (enc) {$\ct_i \samp \enc_k(\pt_{b, i})$};
         \node at (0, -11) (orc_2) {$\ct_j \samp \enc_k(\pt_j)$};
-        \node at (0, -13) (return) {return $b \issame b'$};
+        \node at (0, -13) (return) {return $b' \issame b$};
         \node at (0, -12) (get_bp_2) {$b'$};
 
         % adversary B
@@ -249,9 +249,9 @@ CPA-secure 정의는 다중 암호화의 경우로 확장할 수 있습니다. �
         \node at (6, -3) (get_m) {$\vec{\pt}$};
         \node at (6, -4) (get_m0m1) {$\vec{m}_0, \vec{m}_1$};
         \node at (6, -5) (m0j) {$\pt_{0, j}$ $(j < i)$};
-        \node at (6, -6) (mi) {$\pt_{0, i}, \pt_{1, i}$ $(j = i)$};
-        \node at (6, -8) (c) {$\ct_i$};
-        \node at (6, -9) (m1j) {$\pt_{1, j}$ $(j > i)$};
+        \node at (6, -6) (m1j) {$\pt_{1, j}$ $(j > i)$};
+        \node at (6, -7) (mi) {$\pt_{0, i}, \pt_{1, i}$ $(j = i)$};
+        \node at (6, -9) (c) {$\ct_i$};
         \node at (6, -10) (get_c) {
           $\vec{\ct} = (\ct_{0,1}, \cdots, \ct_{0, i-1}, \ct_i, \ct_{1, i+1}, 
           \cdots, \ct_{1, t})$
@@ -312,9 +312,9 @@ CPA-secure 정의는 다중 암호화의 경우로 확장할 수 있습니다. �
     \begin{split}
       \pr{\advp(1^n) = 1 \when b = 0} 
       &= \sum_{i^* = 1}^t \pr{\advp(1^n) = 1 \when b = 0 \and i = i^*}
-      \cdot \pr{i = i^*} \\
-      &= \frac{1}{t} \cdot \sum_{i^* = 1}^t \pr{\adv(1^n) = 1 \when \vec{\ct} 
-      = (\cdots, \ct_{0, i^* - 1}, \ct_{0, i^*}, \ct_{1, i^* + 1}, \cdots)}
+      \cdot \underbrace{\pr{i = i^*}}_{\frac{1}{t}} \\
+      &= \frac{1}{t} \cdot \sum_{i^* = 1}^t \pr{\adv(\vec{\ct} 
+      = (\cdots, \ct_{0, i^* - 1}, \ct_{0, i^*}, \ct_{1, i^* + 1}, \cdots)) = 1}
       \label{equ:b0orc}
     \end{split}
   \end{equation}
@@ -322,12 +322,12 @@ CPA-secure 정의는 다중 암호화의 경우로 확장할 수 있습니다. �
     \begin{split}
       \pr{\advp(1^n) = 1 \when b = 1} 
       &= \sum_{i^* = 1}^t \pr{\advp(1^n) = 1 \when b = 1 \and i = i^*} 
-      \cdot \pr{i = i^*} \\
-      &= \frac{1}{t} \cdot \sum_{i^* = 1}^t \pr{\adv(1^n) = 1 \when \vec{\ct} 
-      = (\cdots, \ct_{0, i^* - 1}, \ct_{1, i^*}, \ct_{1, i^* + 1}, \cdots)} \\
+      \cdot \underbrace{\pr{i = i^*}}_{=\frac{1}{t}} \\
+      &= \frac{1}{t} \cdot \sum_{i^* = 1}^t \pr{\adv(\vec{\ct} 
+      = (\cdots, \ct_{0, i^* - 1}, \ct_{1, i^*}, \ct_{1, i^* + 1}, \cdots)) = 1} \\
       &= \frac{1}{t} \cdot \sum_{i^* = 0}^{t - 1} 
-      \pr{\adv(1^n) = 1 \when \vec{\ct} 
-      = (\cdots, \ct_{0, i^*}, \ct_{1, i^* + 1}, \ct_{1, i^* + 2}, \cdots)} \\
+      \pr{\adv(\vec{\ct} 
+      = (\cdots, \ct_{0, i^* - 1}, \ct_{0, i^*}, \ct_{1, i^* + 1}, \cdots)) = 1} \\
       \label{equ:b1orc}
     \end{split}
   \end{equation}
