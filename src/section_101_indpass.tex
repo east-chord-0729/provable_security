@@ -1,0 +1,285 @@
+\section{Defining Computationally Secure Encryption}
+
+먼저 개인 키 암호화의 가장 기본적인 개념인 암호문 전용 공격(Ciphertext-Only
+Attack, COA)에 대한 보안을 제시합니다. COA에 대한 보안은 공격자가 단 하나의
+암호문만 관찰하는 경우에 대한 보안입니다. 더 강력한 보안 정의는 나중에
+고려합니다. 보안 정의의 아이디어는 공격자가 암호문으로부터 평문에 대한 어떤
+부분적인 정보도 배울 수 없다는 것입니다. semantic-secure의 정의는 이 개념을
+정확히 공식화한 것으로, 계산상 안전한 암호화의 첫 번째 정의가 제안되었습니다.
+semantic-secure은 복잡하고 작업하기가 어렵습니다. 다행히
+indistinguishability(또는 EAV-secure)라는 동일한 정의가 있으며, 이는 훨씬 더
+간단합니다.
+
+\subsection*{The Basic Definition of Security (IND-PASS security)}
+
+개인 키 암호 체계 $\sch$와 공격자 $\adv$에 대해 실험 $\expeav_{\adv, \sch}$을
+구성합니다. 이 때, $\adv$가 선택하는 메시지 쌍 $\pt_0, \pt_1$은 같은 임의의 비트 길이를 가지지만, 두 메시지는 서로
+달라야 합니다.
+
+\begin{figure}[ht]
+  \centering
+  \begin{tikzpicture}
+    [inner sep=0.5cm, every text node part/.style={align=center}]
+
+    % adversary
+    \node at (6, 0) (adv) {adversary $\adv$};
+    \node at (6, -2) (gen_m) {choose $m_0, m_1$};
+    \node at (6, -4) (get_c) {$c$};
+    \node at (6, -5) (gen_bp) {answer $b' \in \binset{}$};
+
+    % challenger
+    \node at (0, 0) (chl) {challenger $\chl$};
+    \node at (0, -1) (gen_k) {$k \samp \gen(1^{\klen})$};
+    \node at (0, -2) (get_m) {$m_0, m_1$};
+    \node at (0, -3) (b) {$b \unisamp \binset{}$};
+    \node at (0, -4) (enc) {$c \samp \enc(m_b)$};
+    \node at (0, -5) (get_bp) {$b'$};
+    \node at (0, -6) (ret) {return $b' \issame b$};
+
+    % lines
+    \draw[<->] (chl) -- (adv)
+    node[above, midway, inner sep=0.1cm] {\textsf{IND-PASS}};
+    \draw[<-] (get_m) -- (gen_m);
+    \draw[->] (enc) -- (get_c);
+    \draw[<-] (get_bp) -- (gen_bp);
+  \end{tikzpicture}
+  \caption{indistinguishability experiment of private-key encryption scheme}
+  \label{fig:exp_ind_pass}
+\end{figure}
+
+이제, IND-PASS secure를 정의합니다.
+\begin{definition}
+  A private-key encryption scheme $\sch$ has \emph{indistinguishable encryptions
+    in the presence of an eavesdropper}, or is \emph{IND-PASS} secure, if for all
+  PPT distinguisher $\adv$ there is a negligible function $\negl$ such that
+  \begin{equation}
+    \pr{\expeav_{\adv, \sch}(\klen) = 1} \le \frac{1}{2} + \negl(\klen).
+  \end{equation}
+  \label{def:ind_pass}
+\end{definition}
+
+\begin{lemma}
+  A private-key encryption scheme $\sch$ is IND-PASS secure, if for all
+  PPT distinguisher $\adv$ there is a negligible function $\negl$ such that
+  \begin{equation}
+    \abs{\pr{b' = 1 \when b = 0} - \pr{b' = 1 \when b = 1}} \le \negl(\klen).
+  \end{equation}
+  \label{lem:ind_pass}
+\end{lemma}
+
+\begin{proof}
+  IND-PASS secure 정의에 의해 다음이 성립한다.
+  \begin{equation}
+    \begin{split}
+      &\pr{\underbrace{\expeav_{\adv, \sch}(\klen) = 1}_{b \issame b'}} \\
+      &= \abs{
+        \pr{b' = 1 \when b = 1} \cdot \underbrace{\pr{b = 1}}_{= \frac{1}{2}}
+        + \pr{b' = 0 \when b = 0} \cdot \underbrace{\pr{b = 0}}_{= \frac{1}{2}}
+      } \\
+      &= \frac{1}{2} \cdot \abs{
+        \pr{b' = 1 \when b = 1} +
+        \underbrace{\pr{b' = 0 \when b = 0}}_{= 1 - \pr{b' = 1 \when b = 0}}
+      } \\
+      &= \frac{1}{2} + \frac{1}{2} \cdot
+      \abs{\pr{b' = 1 \when b = 0} - \pr{b' = 1 \when b = 1}} \\
+      &\le \frac{1}{2} + \negl(n).
+    \end{split}
+  \end{equation}
+
+  따라서 다음 식을 만족하는 negligible 함수 $\negl$가 존재한다.
+  \begin{equation}
+    \abs{\pr{b' = 1 \when b = 0} - \pr{b' = 1 \when b = 1}} \le \negl(\klen)
+  \end{equation}
+\end{proof}
+
+\newpage
+\subsection*{Semantic Security}
+
+개인 키 암호 체계 $\sch$와 공격자 $\adv$에 대해 실험 $\expsem_{\adv, \sch}$을
+구성하고, semantic-secure를 정의합니다.
+
+\begin{figure}[h]
+  \centering
+  \begin{tikzpicture}
+    [inner sep=0.5cm, every text node part/.style={align=left}]
+
+    % adversary
+    \node at (6, 0) (adv) {adversary $\adv$};
+    \node at (6, -2) (gen_s) {choose $\ptsampalg$};
+    \node at (6, -6) (get_c) {$c, h(m)$};
+    \node at (6, -8) (gen_fy) {answer $f$ and $y$};
+
+    % challenger
+    \node at (0, 0) (chl) {challenger $\chl$};
+    \node at (0, -1) (gen_k) {$k \samp \gen(1^{\klen})$};
+    \node at (0, -2) (get_s) {$\ptsampalg$};
+    \node at (0, -3) (get_m) {$m, m' \samp \ptsampalg$};
+    \node at (0, -4) (b) {$b \unisamp \binset{}$};
+    \node at (0, -6) (enc) {
+      if $b = 1$ \\
+      \quad $c := \enc(m)$ \\
+      if $b = 0$ \\
+      \quad $c := \enc(m')$
+    };
+    \node at (0, -8) (get_fy) {$f, y$};
+    \node at (0, -9) (ret) {return $f(m) \issame y$};
+
+    % lines
+    \draw[<->] (chl) -- (adv)
+    node[above, midway, inner sep=0.1cm] {\textsf{SEM}};
+    \draw[<-] (get_s) -- (gen_s);
+    \draw[->] (enc) -- (get_c);
+    \draw[<-] (get_fy) -- (gen_fy);
+  \end{tikzpicture}
+  \caption{semantic security experiment of private-key encryption scheme}
+  \label{fig:exp_sem}
+\end{figure}
+
+\begin{definition}
+  A private-key encryption scheme $\sch$ is \emph{semantically secure in the presence of an eavesdropper} if for all ppt adversaries $\adv$ there is a negligible function $\negl$ such that
+  \begin{equation}
+    \abs{\pr{f(m) = y \when b = 1} - \pr{f(m) = y \when b = 0}} \le \negl(n).
+  \end{equation}
+  \label{def:sem}
+\end{definition}
+
+다음 정리는 $\sch$가 IND-PASS 관점에서 안전하다면, $\sch$는 semantic 관점에서
+안전하며, 그 역도 성립함을 보여줍니다.
+
+\begin{theorem}
+  A private-key encryption scheme is EAV-secure if and only if it is
+  semantically secure in the presence of an eavesdropper.
+  \label{thm:ind_pass_iff_sem}
+\end{theorem}
+
+\begin{proof}
+  ($\rif$) $\sch$가 semantic 관점에서 안전하지 않다고 가정합니다. 그러면 어떤
+  negligible 함수 $\negl$에 대해 아래의 식을 만족하는 공격자 $\adv$가
+  존재합니다.
+  \begin{equation}
+    \abs{\pr{f(m) = y \when b = 1} - \pr{f(m) = y \when b = 0}} \le \negl(n).
+  \end{equation}
+
+  다음과 같이 실험 $\expeav_{\adv, \sch}(n)$을 진행하는 구분자 $\advp$를 가정합니다.
+  다음에 의해, $\sch$는 가정한 $\advp$에 대해 EAV-secure하지 않습니다.
+  \begin{equation}
+    \begin{split}
+      &\abs{\pr{f(m_1) = y \when b = 1} - \pr{f(m_1) = y \when b = 0}} \\
+      &= \pr{b' = 1 \when b = 0} - \pr{b' = 1 \when b = 1} > \negl(n).
+    \end{split}
+  \end{equation}
+
+  ($\lif$) $\sch$가 EAV-secure하지 않다고 가정합니다. 그러면 어떤 negligible 함수 $\negl$에 대해 아래의 식을 만족하는 구분자 $\adv'$가 존재합니다.
+  \begin{equation}
+    \abs{
+      \pr{\adv'(1^{\klen}) = 1 \when b = 0} - \pr{\adv'(1^{\klen}) = 1 \when b = 1}
+    } > \negl(n).
+  \end{equation}
+
+  다음과 같이 실험 $\expsem_{\adv, \sch}(n)$을 진행하는 공격자 $\adv$를
+  가정합니다. 다음에 의해, $\sch$는 가정한 $\adv$에 대해 semantic-secure하지
+  않습니다.
+  \begin{equation}
+    \begin{split}
+      &\abs{\pr{f(m_1) = y \when b = 0} - \pr{f(m_1) = y \when b = 1}} \\
+      &= \abs{\pr{b' = 1 \when b = 0} - \pr{b' = 1 \when b = 1}} \\
+      &> \negl(\klen)
+    \end{split}
+  \end{equation}
+
+  \newpage
+  \begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}
+      [inner sep=0.5cm, every text node part/.style={align=center}]
+
+      % challenger
+      \node at (0, 0) (chl) {challenger $\chl$};
+      \node at (0, -1) (gen) {$k \samp \gen(1^{\klen})$};
+      \node at (0, -2) (m0m1) {$m_0, m_1$};
+      \node at (0, -3) (enc) {$b \unisamp \binset{}$ \\ $c := \enc(m_b)$};
+      \node at (0, -5) (bp) {$b'$};
+      \node at (0, -6) (ret) {return $b' \issame b$};
+
+      % adversary
+      \node at (6, 0) (advp) {adversary $\advp$};
+      \node at (6, -2) (get_m) {$m_0, m_1 \samp \ptsampalg$};
+      \node at (6, -3) (c) {$c$};
+      \node at (6, -4) (get_fy) {$f, y$};
+      \node at (6, -5) (atk) {
+        $b' := 1$, if $f(m_1) = y$ \\
+        $b':= 0$, otherwise
+      };
+
+      % sem adv box
+      \node at (12, 0) (adv) {adversary $\adv$};
+      \node at (12, -2) (S) {choose $\ptsampalg$};
+      \node at (12, -3) (cc) {$c, h(m_1)$};
+      \node at (12, -4) (fy) {answer $f$ and $y$};
+
+      % lines
+      \draw[<->] (chl) -- (advp)
+      node[above, midway, inner sep=0.1cm] {\textsf{IND-PASS}};
+      \draw[<->] (advp) -- (adv)
+      node[above, midway, inner sep=0.1cm] {\textsf{SEM}};
+      \draw[<-] (get_m) -- (S);
+      \draw[<-] (m0m1) -- (get_m);
+      \draw[->] (enc) -- (c);
+      \draw[->] (c) -- (cc);
+      \draw[<-] (get_fy) -- (fy);
+      \draw[<-] (bp) -- (atk);
+    \end{tikzpicture}
+    \caption{EAV-secure experiment of $\adv$ with $\adv'$}
+    \label{fig:eavtosem}
+  \end{figure}
+
+  \begin{figure}[ht]
+    \centering
+    \begin{tikzpicture}
+      [inner sep=0.5cm, every text node part/.style={align=center}]
+
+      % challenger
+      \node at (0, 0) (chl) {challenger $\chl$};
+      \node at (0, -1) (gen) {$k \samp \gen(1^{\klen})$};
+      \node at (0, -3) (getS) {$m_0, m_1 \samp \ptsampalg$};
+      \node at (0, -4) (enc) {$b \unisamp \binset{}$ \\ $c \samp \enc(m_b)$};
+      \node at (0, -6.5) (get_fy) {$f, y$};
+      \node at (0, -7.5) (ret) {return $f(m_1) \issame y$};
+
+      % adversary B
+      \node at (6, 0) (advp) {adversary $\advp$};
+      \node at (6, -2) (get_m) {$m_0, m_1$};
+      \node at (6, -3) (chooseS) {
+        choose $\ptsampalg$ \\
+        ($\ptsampalg$ outputs $m_0$ and $m_1$)
+      };
+      \node at (6, -4) (get_ch) {$c, h(m_1)$};
+      \node at (6, -5) (get_bp) {$b'$};
+      \node at (6, -6.5) (choose_fy) {
+        choose $f$ and $y$ s.t. \\
+        $f(m_1) = y$ if $b' = 1$ \\
+        $f(m_1) \neq y$, otherwise
+      };
+
+      % adversary A
+      \node at (12, 0) (adv) {adversary $\adv$};
+      \node at (12, -2) (choose_m) {choose $m_0, m_1 \in \binset{*}$};
+      \node at (12, -4) (get_c) {$c$};
+      \node at (12, -5) (choose_bp) {answer $b' \in \binset{}$};
+
+      % send
+      \draw[<->] (chl) -- (advp)
+      node[above, midway, inner sep=0.1cm] {\textsf{SEM}};
+      \draw[<->] (advp) -- (adv)
+      node[above, midway, inner sep=0.1cm] {\textsf{IND-PASS}};
+      \draw[<-] (get_m) -- (choose_m);
+      \draw[<-] (getS) -- (chooseS);
+      \draw[->] (enc) -- (get_ch);
+      \draw[->] (get_ch) -- (get_c);
+      \draw[<-] (get_bp) -- (choose_bp);
+      \draw[<-] (get_fy) -- (choose_fy);
+     \end{tikzpicture}
+    \caption{semantic-secure experiment of $\adv$ with $\adv'$}
+    \label{fig:semtoeav}
+  \end{figure}
+\end{proof}

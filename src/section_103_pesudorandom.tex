@@ -1,6 +1,66 @@
-\section{Constructing a CPA-Secure Encryption Scheme}
+\section{Pseudorandom Function and Pseudorandom Permutation}
 
-이 장에서는 Pseudorandom Function(PRF)과 Pseudorandom Permutation(PRP)을 정의합니다.
+이 장에서는 Pseudorandom Generator(PRG)와 Pseudorandom Function(PRF) 그리고
+Pseudorandom Permutation(PRP)을 정의합니다.
+
+\subsection*{Pseudorandom Generators}
+
+$\prg$를 길이 $n$의 문자열을 길이 $l(n) > n$의 출력에 매핑하는 효율적으로 계산
+가능한 결정론적 함수라고 합시다. 효율적인 구분자 $\adv$가 $\prg$에 의해 출력된
+문자열이 주어지는지 아니면 임의로 균일하게 선택된 문자열이 주어지는지 구분할 수
+없는 경우 $\prg$를 PRG라고 부릅니다.
+
+\begin{figure}[ht]
+  \centering
+  \begin{tikzpicture}
+    [inner sep=0.5cm, every text node part/.style={align=left}]
+    % experiment players and what players are doing
+    \node at (0, 0) (chl) {challenger $\chl$};
+    \node at (7, 0) (adv) {adversary $\adv$};
+
+    % draw lines
+    \draw[<->] (chl) -- (adv)
+    node[above, midway, inner sep=0.1cm] {\textsf{PRG} experiment};
+
+    % challenger C
+    \node at (0, -1) (b) {$b \unisamp \binset{}$};
+    \node at (0, -3) (samp_r) {
+      if $b = 1$ \\
+      \quad $s \unisamp \binset{n}$ \\
+      \quad $r := \prg(\seed)$ \\
+      otherwise \\
+      \quad $r \unisamp \binset{\len(\klen)}$
+      };
+    \node at (0, -5) (get_bp) {$b'$};
+    \node at (0, -6) (return) {return $b \issame b'$};
+
+    % adversary A
+    \node at (7, -3) (get_r) {$r$};
+    \node at (7, -5) (chs_bp) {choose $b' \in \binset{}$};
+
+    % draw lines
+    \draw[->] (samp_r) -- (get_r);
+    \draw[<-] (get_bp) -- (chs_bp);
+  \end{tikzpicture}
+  \caption{Indistinguishability experiment for a PRG}
+  \label{fig:exp_prg}
+\end{figure}
+
+공식적인 정의는 다음과 같습니다.
+
+\begin{definition} 
+  Let $\prg$ be a DPT algorithm such that for any $\klen$ and any input $\seed \in
+  \binset{\klen}$, the result $\prg(\seed)$ is a string of length $\len(\klen)$. $\prg$ is a
+  \emph{pseudorandom generator} if the following conditions hold:
+  \begin{itemize}
+      \item (Expansion.) For every $\klen$ it holds that $\len(\klen) > \klen$. We call $\len(\klen)$ the \emph{expansion factor} of $\prg$.
+      \item (Pseudorandomness.) For any PPT algorithm $\adv$, there is a negligible function $\negl$ such that
+            \begin{equation}
+                \pr{\expprg_{\adv, \prg}(n) = 1} \leq \frac{1}{2} + \negl(n).
+            \end{equation}
+  \end{itemize}
+  \label{def:prg}
+\end{definition}
 
 \subsection*{Pseudorandom Functions}
 균일한 키 $\key \in \binset{\klen}$에 대한 효율적이고 결정론적인 키 함수 
